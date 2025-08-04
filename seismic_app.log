@@ -903,3 +903,180 @@ The resulting plot would have 15 rows (rows=15).
 2025-08-04 10:28:13,530 - INFO - Successfully created DB engine.
 2025-08-04 10:28:21,963 - INFO - Successfully created DB engine.
 2025-08-04 10:28:22,018 - INFO - Successfully created DB engine.
+2025-08-04 11:19:29,800 - WARNING - Not Found: /
+2025-08-04 11:19:33,400 - INFO - Successfully created DB engine.
+2025-08-04 11:19:33,442 - INFO - package: mysql.connector.plugins
+2025-08-04 11:19:33,442 - INFO - plugin_name: caching_sha2_password
+2025-08-04 11:19:33,442 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-04 11:19:33,442 - INFO - package: mysql.connector.plugins
+2025-08-04 11:19:33,442 - INFO - plugin_name: mysql_native_password
+2025-08-04 11:19:33,443 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-04 11:19:45,763 - INFO - Successfully created DB engine.
+2025-08-04 11:19:56,234 - INFO - Successfully created DB engine.
+2025-08-04 11:19:56,299 - INFO - Successfully created DB engine.
+2025-08-04 11:24:46,930 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:24:48,759 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:24:52,515 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:27:27,694 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:29:06,058 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:29:50,391 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:32:11,580 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:32:27,950 - INFO - Successfully created DB engine.
+2025-08-04 11:32:27,999 - INFO - package: mysql.connector.plugins
+2025-08-04 11:32:27,999 - INFO - plugin_name: caching_sha2_password
+2025-08-04 11:32:27,999 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-04 11:32:27,999 - INFO - package: mysql.connector.plugins
+2025-08-04 11:32:27,999 - INFO - plugin_name: mysql_native_password
+2025-08-04 11:32:27,999 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-04 11:32:29,197 - INFO - Successfully created DB engine.
+2025-08-04 11:32:35,790 - INFO - Successfully created DB engine.
+2025-08-04 11:32:44,115 - INFO - Successfully created DB engine.
+2025-08-04 11:32:44,175 - INFO - Successfully created DB engine.
+2025-08-04 11:33:23,312 - INFO - Successfully created DB engine.
+2025-08-04 11:33:23,365 - INFO - Successfully created DB engine.
+2025-08-04 11:37:01,871 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:37:11,080 - INFO - Successfully created DB engine.
+2025-08-04 11:37:11,118 - INFO - package: mysql.connector.plugins
+2025-08-04 11:37:11,118 - INFO - plugin_name: caching_sha2_password
+2025-08-04 11:37:11,118 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-04 11:37:11,119 - INFO - package: mysql.connector.plugins
+2025-08-04 11:37:11,119 - INFO - plugin_name: mysql_native_password
+2025-08-04 11:37:11,119 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-04 11:37:11,144 - INFO - Successfully created DB engine.
+2025-08-04 11:39:00,353 - INFO - Successfully created DB engine.
+2025-08-04 11:39:12,680 - INFO - Successfully created DB engine.
+2025-08-04 11:39:12,735 - INFO - Successfully created DB engine.
+2025-08-04 11:41:05,306 - INFO - Successfully created DB engine.
+2025-08-04 11:41:14,610 - INFO - Successfully created DB engine.
+2025-08-04 11:41:14,673 - INFO - Successfully created DB engine.
+2025-08-04 11:44:41,889 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:44:54,531 - INFO - Successfully created DB engine.
+2025-08-04 11:44:54,570 - INFO - package: mysql.connector.plugins
+2025-08-04 11:44:54,570 - INFO - plugin_name: caching_sha2_password
+2025-08-04 11:44:54,570 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-04 11:44:54,571 - INFO - package: mysql.connector.plugins
+2025-08-04 11:44:54,571 - INFO - plugin_name: mysql_native_password
+2025-08-04 11:44:54,571 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-04 11:44:54,593 - INFO - Successfully created DB engine.
+2025-08-04 11:45:22,373 - INFO - Successfully created DB engine.
+2025-08-04 11:45:31,574 - INFO - Successfully created DB engine.
+2025-08-04 11:45:31,626 - INFO - Successfully created DB engine.
+2025-08-04 11:45:32,529 - ERROR - Results view error: Cannot choose from an empty sequence
+2025-08-04 11:45:48,214 - INFO - Successfully created DB engine.
+2025-08-04 11:45:56,893 - INFO - Successfully created DB engine.
+2025-08-04 11:45:56,956 - INFO - Successfully created DB engine.
+2025-08-04 11:47:30,040 - INFO - Successfully created DB engine.
+2025-08-04 11:47:39,863 - INFO - Successfully created DB engine.
+2025-08-04 11:47:39,923 - INFO - Successfully created DB engine.
+2025-08-04 11:50:17,672 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:50:20,468 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:50:48,742 - INFO - Successfully created DB engine.
+2025-08-04 11:50:48,781 - INFO - package: mysql.connector.plugins
+2025-08-04 11:50:48,781 - INFO - plugin_name: caching_sha2_password
+2025-08-04 11:50:48,781 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-04 11:50:48,781 - INFO - package: mysql.connector.plugins
+2025-08-04 11:50:48,781 - INFO - plugin_name: mysql_native_password
+2025-08-04 11:50:48,782 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-04 11:50:48,803 - INFO - Successfully created DB engine.
+2025-08-04 11:50:59,014 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:51:03,860 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:51:06,608 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:51:14,069 - INFO - Successfully created DB engine.
+2025-08-04 11:51:14,108 - INFO - package: mysql.connector.plugins
+2025-08-04 11:51:14,108 - INFO - plugin_name: caching_sha2_password
+2025-08-04 11:51:14,108 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-04 11:51:14,108 - INFO - package: mysql.connector.plugins
+2025-08-04 11:51:14,108 - INFO - plugin_name: mysql_native_password
+2025-08-04 11:51:14,109 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-04 11:51:14,131 - INFO - Successfully created DB engine.
+2025-08-04 11:51:51,651 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:51:53,526 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:51:59,450 - INFO - Successfully created DB engine.
+2025-08-04 11:51:59,489 - INFO - package: mysql.connector.plugins
+2025-08-04 11:51:59,489 - INFO - plugin_name: caching_sha2_password
+2025-08-04 11:51:59,489 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-04 11:51:59,489 - INFO - package: mysql.connector.plugins
+2025-08-04 11:51:59,489 - INFO - plugin_name: mysql_native_password
+2025-08-04 11:51:59,490 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-04 11:51:59,511 - INFO - Successfully created DB engine.
+2025-08-04 11:52:09,712 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:52:18,598 - INFO - Successfully created DB engine.
+2025-08-04 11:52:18,637 - INFO - package: mysql.connector.plugins
+2025-08-04 11:52:18,638 - INFO - plugin_name: caching_sha2_password
+2025-08-04 11:52:18,638 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-04 11:52:18,638 - INFO - package: mysql.connector.plugins
+2025-08-04 11:52:18,638 - INFO - plugin_name: mysql_native_password
+2025-08-04 11:52:18,638 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-04 11:52:18,653 - INFO - Successfully created DB engine.
+2025-08-04 11:56:12,686 - INFO - Successfully created DB engine.
+2025-08-04 11:56:21,787 - INFO - Successfully created DB engine.
+2025-08-04 11:56:21,839 - INFO - Successfully created DB engine.
+2025-08-04 11:56:22,581 - ERROR - Results view error: Cannot choose from an empty sequence
+2025-08-04 11:56:46,540 - INFO - Successfully created DB engine.
+2025-08-04 11:56:58,048 - INFO - Successfully created DB engine.
+2025-08-04 11:56:58,100 - INFO - Successfully created DB engine.
+2025-08-04 11:56:58,839 - ERROR - Results view error: Cannot choose from an empty sequence
+2025-08-04 11:59:11,834 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:59:14,827 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:59:33,943 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:59:39,965 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:59:41,690 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 11:59:44,554 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:01:55,291 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:02:26,847 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:02:33,703 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:02:46,770 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:02:48,540 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:02:56,332 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:02:58,088 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:03:03,878 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:03:07,703 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:03:12,496 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:03:14,250 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:03:20,262 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:03:30,051 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:03:43,583 - INFO - Successfully created DB engine.
+2025-08-04 12:03:43,622 - INFO - package: mysql.connector.plugins
+2025-08-04 12:03:43,622 - INFO - plugin_name: caching_sha2_password
+2025-08-04 12:03:43,622 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-04 12:03:43,622 - INFO - package: mysql.connector.plugins
+2025-08-04 12:03:43,622 - INFO - plugin_name: mysql_native_password
+2025-08-04 12:03:43,622 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-04 12:03:43,644 - INFO - Successfully created DB engine.
+2025-08-04 12:03:44,358 - ERROR - Results view error: object of type 'builtin_function_or_method' has no len()
+2025-08-04 12:05:56,645 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:06:19,578 - INFO - Successfully created DB engine.
+2025-08-04 12:06:19,616 - INFO - package: mysql.connector.plugins
+2025-08-04 12:06:19,616 - INFO - plugin_name: caching_sha2_password
+2025-08-04 12:06:19,616 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-04 12:06:19,617 - INFO - package: mysql.connector.plugins
+2025-08-04 12:06:19,617 - INFO - plugin_name: mysql_native_password
+2025-08-04 12:06:19,617 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-04 12:06:19,636 - INFO - Successfully created DB engine.
+2025-08-04 12:06:22,615 - INFO - draw_magnitude_values: result_df is empty for row 22
+2025-08-04 12:06:22,699 - INFO - draw_magnitude_values: result_df is empty for row 23
+2025-08-04 12:06:22,785 - INFO - draw_magnitude_values: result_df is empty for row 24
+2025-08-04 12:08:10,637 - INFO - Successfully created DB engine.
+2025-08-04 12:08:10,688 - INFO - Successfully created DB engine.
+2025-08-04 12:13:33,932 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:13:45,053 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:14:20,256 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:14:31,403 - INFO - Successfully created DB engine.
+2025-08-04 12:14:31,441 - INFO - package: mysql.connector.plugins
+2025-08-04 12:14:31,442 - INFO - plugin_name: caching_sha2_password
+2025-08-04 12:14:31,442 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-04 12:14:31,442 - INFO - package: mysql.connector.plugins
+2025-08-04 12:14:31,442 - INFO - plugin_name: mysql_native_password
+2025-08-04 12:14:31,442 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-04 12:14:31,463 - INFO - Successfully created DB engine.
+2025-08-04 12:14:32,555 - ERROR - Results view error: name 'generate_colors' is not defined
+2025-08-04 12:15:33,366 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:15:54,391 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-04 12:16:55,434 - INFO - Successfully created DB engine.
+2025-08-04 12:16:55,475 - INFO - package: mysql.connector.plugins
+2025-08-04 12:16:55,475 - INFO - plugin_name: caching_sha2_password
+2025-08-04 12:16:55,475 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-04 12:16:55,475 - INFO - package: mysql.connector.plugins
+2025-08-04 12:16:55,475 - INFO - plugin_name: mysql_native_password
+2025-08-04 12:16:55,476 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-04 12:16:55,497 - INFO - Successfully created DB engine.

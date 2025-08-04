@@ -12,6 +12,7 @@ from django.shortcuts import render, redirect
 from django.core.files.storage import FileSystemStorage
 from sqlalchemy import create_engine, text, exc
 from plotly.subplots import make_subplots
+import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import re
 
@@ -175,7 +176,12 @@ def process_dataframe(df, min_mag, min_mlgr, well_lat, well_lon,
         return None
 
 
-
+def generate_colors(n, cmap_name='tab20'):
+    """
+    Matplotlib colormap orqali `n` ta rang hosil qiladi.
+    """
+    cmap = plt.get_cmap(cmap_name)
+    return [f'rgb{tuple(int(c * 255) for c in cmap(i % cmap.N)[:3])}' for i in range(n)]
 
 def plot_data_with_anomalies(fig, x_val, y_val, mean, sigma, btn_value, row_idx, col_idx, trace_color, element_name, key_name):
     """
@@ -197,7 +203,7 @@ def plot_data_with_anomalies(fig, x_val, y_val, mean, sigma, btn_value, row_idx,
         type='line',
         x0=min(x_val), x1=max(x_val),
         y0=upper_bound, y1=upper_bound,
-        line=dict(color='green', width=1.1),
+        line=dict(color='green', width=1.5),
         row=row_idx, col=col_idx,
         yref=yref, xref='x'
     )
@@ -216,7 +222,7 @@ def plot_data_with_anomalies(fig, x_val, y_val, mean, sigma, btn_value, row_idx,
         type='line',
         x0=min(x_val), x1=max(x_val),
         y0=mean, y1=mean,
-        line=dict(color='magenta', width=1.1),
+        line=dict(color='magenta', width=1.5),
         row=row_idx, col=col_idx,
         yref=yref, xref='x'
     )
@@ -235,7 +241,7 @@ def plot_data_with_anomalies(fig, x_val, y_val, mean, sigma, btn_value, row_idx,
         type='line',
         x0=min(x_val), x1=max(x_val),
         y0=lower_bound, y1=lower_bound,
-        line=dict(color='blue', width=1.1),
+        line=dict(color='blue', width=1.5),
         row=row_idx, col=col_idx,
         yref=yref, xref='x'
     )
@@ -503,7 +509,7 @@ def parametrs_view(request):
 def results_view(request):
     """
     Generates and displays seismic analysis results and plots.
-    Now plotting only Mb magnitudes.
+    For one selected parameter and multiple wells, splits into paginated HTML files (5 wells per file).
     """
     selected_keys = request.session.get('selected_keys', [])
     selected_params = request.session.get('selected_params', [])
@@ -513,162 +519,108 @@ def results_view(request):
     excel_file = request.session.get('excel_file')
 
     if not all([selected_keys, excel_file, min_mag is not None, btn_value is not None, min_mlgr is not None]):
-        logging.warning("Missing session data for results view. Redirecting to parametrs.")
-        return render(request, 'results.html', {'error': 'To‘liq ma’lumotlar mavjud emas. Iltimos, oldingi qadamlarga qayting.'})
+        return render(request, 'results.html', {'error': 'To‘liq maʼlumotlar mavjud emas. Iltimos, oldingi qadamlarga qayting.'})
 
     if not selected_params:
-        for group_name, params_list in DEFAULT_ELEMENTS_GROUPS.items():
-            selected_params.extend(params_list)
-        selected_params = sorted(list(set(selected_params)))
+        for group in DEFAULT_ELEMENTS_GROUPS.values():
+            selected_params.extend(group)
+        selected_params = sorted(set(selected_params))
 
     try:
         file_path = os.path.join(settings.MEDIA_ROOT, excel_file)
         if not os.path.exists(file_path):
-            logging.error(f"Excel file not found at {file_path}")
             return render(request, 'results.html', {'error': 'Yuklangan Excel fayl topilmadi.'})
 
         dfe = pd.read_excel(file_path)
-        
-        required_excel_cols = [DATE_COLUMN, TIME_COLUMN, LATITUDE_COLUMN, LONGITUDE_COLUMN, 
-                               MAIN_MAGNITUDE_COLUMN, SECONDARY_MAGNITUDE_COLUMN]
-        if not all(col in dfe.columns for col in required_excel_cols):
-            missing_cols = [col for col in required_excel_cols if col not in dfe.columns]
-            logging.error(f"Excel file is missing required columns: {missing_cols}")
-            return render(request, 'results.html', {
-                'error': f"Excel faylida kerakli ustunlar topilmadi: {', '.join(missing_cols)}. "
-                         f"Iltimos, ustun nomlarini tekshiring (masalan: {', '.join(required_excel_cols)})."
-            })
+        required_cols = [DATE_COLUMN, TIME_COLUMN, LATITUDE_COLUMN, LONGITUDE_COLUMN, MAIN_MAGNITUDE_COLUMN, SECONDARY_MAGNITUDE_COLUMN]
+        if not all(col in dfe.columns for col in required_cols):
+            missing = [col for col in required_cols if col not in dfe.columns]
+            return render(request, 'results.html', {'error': f"Excel faylida kerakli ustunlar yo‘q: {', '.join(missing)}."})
 
         lst_stansiya, well_coords = fetch_data()
         if not lst_stansiya or not well_coords:
-             return render(request, 'results.html', {'error': 'Ma’lumotlar bazasidan ma’lumotlarni yuklashda xatolik yuz berdi.'})
-        
+            return render(request, 'results.html', {'error': 'Bazadan maʼlumotlar olinmadi.'})
+
+        engine = connect_db()
+        conn = engine.connect()
+
         plot_files = []
-        engine = None
-        conn = None
-        try:
-            engine = connect_db()
-            conn = engine.connect()
+        chunk_size = 5  # Har 5 ta quduq bitta grafik faylga joylanadi
 
-            for element in selected_params:
-                num_subp = len(selected_keys)
-                H = max(800, 600 * num_subp)
+        if len(selected_params) == 1:
+            element = selected_params[0]
+            valid_keys = []
+            quduq_data = []
+            for key in selected_keys:
+                ssdi_id = lst_stansiya.get(key, {}).get(element)
+                if not ssdi_id:
+                    continue
+                query = text(f"SELECT date, `{ssdi_id}` FROM alldata WHERE `{ssdi_id}` IS NOT NULL")
+                data = conn.execute(query).fetchall()
+                if not data:
+                    continue
+                x_val = pd.to_datetime([row[0] for row in data])
+                y_val = [row[1] for row in data]
+                mean, sigma = np.mean(y_val), np.std(y_val)
+                stansiya, skvajina = key.split(' | ')
+                quduq_data.append((x_val, y_val, mean, sigma, element, key, skvajina))
+                valid_keys.append(key)
 
-                subplot_titles = [f"<b>{key}</b> uchun <b>{element}</b> (Anomaliya: {btn_value}σ | M>={min_mag} | M/lgR>={min_mlgr})" for key in selected_keys]
+            # Sahifalash (5 tadan bo‘lib chiqarish)
+            for i in range(0, len(quduq_data), chunk_size):
+                chunk = quduq_data[i:i + chunk_size]
+                color_pool = generate_colors(len(chunk))
+                fig = make_subplots(
+                    rows=len(chunk), cols=1,
+                    subplot_titles=[f"{key} - {element}" for (_, _, _, _, _, key, _) in chunk],
+                    vertical_spacing=min(0.04, round(1 / (max(2, len(chunk) - 1)), 4)),
+                    specs=[[{"secondary_y": True}] for _ in chunk]
+                )
 
-                fig = make_subplots(rows=num_subp, cols=1, subplot_titles=subplot_titles,
-                                    vertical_spacing=0.08, specs=[[{"secondary_y": True}] for _ in selected_keys])
-                
-                fig.update_layout(height=H, width=2000,
-                                  title_text=f"<b>{element}</b> parametrlari va seysmik voqealar",
-                                  showlegend=True,
-                                  plot_bgcolor='gainsboro', 
-                                  hovermode='x unified')
+                fig.update_layout(
+                    height=max(700, len(chunk) * 500),
+                    width=2000,
+                    title_text=f"{element} bo‘yicha {i + 1}–{i + len(chunk)}-quduqlar grafiklari",
+                    showlegend=True,
+                    plot_bgcolor='gainsboro',
+                    hovermode='x unified'
+                )
 
-                current_colors = COLOR_PALETTE.copy() 
+                for idx, (x, y, mean, sigma, param, key, skv) in enumerate(chunk):
+                    row = idx + 1
+                    trace_color = color_pool[idx]
+                    y_all = plot_data_with_anomalies(fig, x, y, mean, sigma, btn_value, row, 1, trace_color, param, key)
+                    fig.update_yaxes(title_text=f"{param} Qiymati", range=[min(y_all)*0.9, max(y_all)*1.1], row=row, col=1)
 
-                for idx, key in enumerate(selected_keys):
-                    stansiya, skvajina = key.split(' | ')
-                    ssdi_id = lst_stansiya.get(key, {}).get(element)
-                    
-                    if not ssdi_id:
-                        logging.warning(f"No ssdi_id found for Stansiya: {stansiya}, Skvajina: {skvajina}, Element: {element}")
-                        fig.add_annotation(xref="paper", yref="paper", x=0.5, y=0.5,
-                            text=f"Ma'lumotlar mavjud emas: {key} - {element}",
-                            showarrow=False, font=dict(size=16, color="red"), row=idx+1, col=1)
-                        continue
-                    
-                    try:
-                        query = text(f"SELECT date, `{ssdi_id}` FROM alldata WHERE `{ssdi_id}` IS NOT NULL")
-                        data = conn.execute(query).fetchall()
+                    lat, lon = well_coords.get(skv, (0, 0))
+                    result_df = process_dataframe(
+                        dfe, min_mag, min_mlgr, lat, lon,
+                        DATE_COLUMN, TIME_COLUMN, LATITUDE_COLUMN, LONGITUDE_COLUMN,
+                        MAIN_MAGNITUDE_COLUMN, SECONDARY_MAGNITUDE_COLUMN
+                    )
+                    draw_magnitude_values(fig, result_df, row)
+                    fig.update_xaxes(tickformat="%Y", showgrid=True, griddash='dot', dtick="M12", row=row, col=1)
 
-                        if not data:
-                            logging.info(f"No data found for ssdi_id: {ssdi_id} ({key}, {element})")
-                            fig.add_annotation(xref="paper", yref="paper", x=0.5, y=0.5,
-                                text=f"Ma'lumotlar mavjud emas: {element}",
-                                showarrow=False, font=dict(size=16, color="gray"), row=idx+1, col=1)
-                            continue
-                        
-                        x_val = [item[0] for item in data]
-                        y_val = [item[1] for item in data]
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                safe_element = re.sub(r'[\\/:*?"<>|]', '_', element)
+                file_name = f"{safe_element}_part_{(i // chunk_size) + 1}.html"
+                filepath = os.path.join(settings.MEDIA_ROOT, file_name)
+                try:
+                    fig.write_html(filepath, include_plotlyjs='cdn')
+                    plot_files.append({'element': f"{element} ({i + 1}–{i + len(chunk)})", 'file_url': f"{settings.MEDIA_URL}{file_name}"})
+                except BrokenPipeError:
+                    logging.warning("Broken pipe while writing plot.")
 
-                        x_val_dt = pd.to_datetime(x_val)
+            return render(request, 'results.html', {'plot_files': plot_files})
 
-                        mean = np.mean(np.array(y_val))
-                        sigma = np.std(np.array(y_val))
+        else:
+            return render(request, 'results.html', {'error': 'Ushbu sahifalash rejimi faqat bitta parametr uchun ishlaydi.'})
 
-                        current_trace_color = random.choice(current_colors)
-                        current_colors.remove(current_trace_color)
-
-                        y_all_for_range = plot_data_with_anomalies(fig, x_val_dt, y_val, mean, sigma, btn_value, idx + 1, 1, current_trace_color, element, key)
-                        
-                        fig.update_yaxes(title_text=f"{element} Qiymati", 
-                                         range=[min(y_all_for_range) * 0.9, max(y_all_for_range) * 1.1],
-                                         row=idx+1, col=1, secondary_y=False)
-
-                        lat, lon = well_coords.get(skvajina, (0, 0))
-                        
-                        result_df = process_dataframe(dfe, min_mag, min_mlgr, lat, lon,
-                                                      DATE_COLUMN, TIME_COLUMN, LATITUDE_COLUMN, LONGITUDE_COLUMN, 
-                                                      MAIN_MAGNITUDE_COLUMN, SECONDARY_MAGNITUDE_COLUMN)
-                        
-                        # Faqatgina magnituda grafigi chizilishi kerak bo'lsa (yoki umumiy grafikda)
-                        # Bu joyda faqat anomaliya grafigi bo'lgani uchun, agar sizning asl rasmimgizda magnituda bo'lmagani kabi
-                        # bu qatorni olib tashlash kerak:
-                        # draw_magnitude_values(fig, result_df, idx + 1)
-                        # Agar sizda magnituda ikkinchi o'qda bo'lsa, u holda bu qatorni qoldirishingiz kerak.
-                        # Yuqoridagi rasmda magnituda ko'rinmagani uchun, men buni shartli qilib izohlab qo'ydim.
-                        # Agar sizda magnituda bo'lishi kerak bo'lsa, avvalgi holatida qoldiring.
-                        draw_magnitude_values(fig, result_df, idx + 1)
-                        
-                        fig.update_xaxes(
-                            tickformat="%Y",
-                            showgrid=True,
-                            griddash='dot',
-                            dtick="M12",
-                            row=idx+1, col=1
-                        )
-
-                    except exc.SQLAlchemyError as db_err:
-                        logging.error(f"Database operation error for {key}: {db_err}")
-                        fig.add_annotation(xref="paper", yref="paper", x=0.5, y=0.5,
-                            text=f"DB xatosi: {element}", showarrow=False, font=dict(size=16, color="orange"), row=idx+1, col=1)
-                    except KeyError as ke:
-                        logging.error(f"Data processing key error for {key}, element {element}: {ke}")
-                        fig.add_annotation(xref="paper", yref="paper", x=0.5, y=0.5,
-                            text=f"Ma'lumot formatida xato: {element}", showarrow=False, font=dict(size=16, color="orange"), row=idx+1, col=1)
-                    except Exception as e:
-                        logging.error(f"Graph draw error for {key}, element {element}: {e}")
-                        fig.add_annotation(xref="paper", yref="paper", x=0.5, y=0.5,
-                            text=f"Chizmada xato: {element}", showarrow=False, font=dict(size=16, color="red"), row=idx+1, col=1)
-                
-                safe_element_name = re.sub(r'[\/:*?"<>|]', '_', element)
-                if len(selected_keys) == 1:
-                    safe_key_name = re.sub(r'[\/:*?"<>|]', '_', selected_keys[0])
-                    file_name = f"{safe_key_name}_{safe_element_name}.html"
-                else:
-                    file_name = f"multi_well_{safe_element_name}.html"
-                
-                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                fig.write_html(file_path, include_plotlyjs='cdn')
-                plot_files.append({'element': element, 'file_url': f'{settings.MEDIA_URL}{file_name}'})
-
-        except Exception as e:
-            logging.error(f"An error occurred during plot generation: {e}")
-            return render(request, 'results.html', {'error': f'Grafiklarni yaratishda kutilmagan xato: {e}'})
-        finally:
-            if conn:
-                conn.close()
-            if engine:
-                engine.dispose()
-
-        return render(request, 'results.html', {'plot_files': plot_files})
-    except pd.errors.EmptyDataError:
-        logging.error(f"Excel file '{excel_file}' is empty.")
-        return render(request, 'results.html', {'error': 'Yuklangan Excel fayli bo‘sh.'})
-    except FileNotFoundError:
-        logging.error(f"Excel file '{excel_file}' not found during processing.")
-        return render(request, 'results.html', {'error': 'Yuklangan Excel fayl topilmadi yoki o‘chirildi.'})
     except Exception as e:
-        logging.error(f"Results view main error: {e}")
-        return render(request, 'results.html', {'error': f'Natijalarni qayta ishlashda umumiy xato yuz berdi: {e}'})
+        logging.error(f"Results view error: {e}")
+        return render(request, 'results.html', {'error': f"Xatolik: {e}"})
+
+    finally:
+        if 'conn' in locals(): conn.close()
+        if 'engine' in locals(): engine.dispose()
+
