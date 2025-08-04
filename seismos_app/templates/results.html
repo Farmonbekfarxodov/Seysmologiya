@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<h2>Grafik natijalar</h2>
+{% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+{% else %}
+    <div class="alert alert-info">
+        Grafiklar avtomatik ravishda yangi yorliqlarda ochilmoqda. Agar grafiklar ochilmasa, quyidagi havolalardan foydalaning.
+    </div>
+    <div class="alert alert-warning">
+        Brauzeringiz pop-uplarni bloklashi mumkin. Iltimos, pop-uplarga ruxsat bering yoki quyidagi havolalardan foydalaning.
+    </div>
+    <ul class="list-group">
+        {% for plot in plot_files %}
+            <li class="list-group-item">
+                <a href="{{ plot.file_url }}" target="_blank" class="btn btn-link">{{ plot.element }} grafikni ochish</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const plotFiles = [
+                {% for plot in plot_files %}
+                    "{{ plot.file_url }}",
+                {% endfor %}
+            ];
+            plotFiles.forEach((url, index) => {
+                setTimeout(() => {
+                    window.open(url, '_blank');
+                }, index * 1000); // Har bir grafikni 1 soniya kechikish bilan ochish
+            });
+        });
+    </script>
+{% endif %}
+{% endblock %}
