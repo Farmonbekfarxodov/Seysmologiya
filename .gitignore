@@ -177,3 +177,5 @@ cython_debug/
 .static/
 media/
 seismic_app.log
+
+__pycache__/
