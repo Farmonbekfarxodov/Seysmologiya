@@ -1080,3 +1080,14 @@ The resulting plot would have 15 rows (rows=15).
 2025-08-04 12:16:55,475 - INFO - plugin_name: mysql_native_password
 2025-08-04 12:16:55,476 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
 2025-08-04 12:16:55,497 - INFO - Successfully created DB engine.
+2025-08-04 12:30:22,613 - WARNING - Not Found: /
+2025-08-04 12:30:26,019 - INFO - Successfully created DB engine.
+2025-08-04 12:30:26,059 - INFO - package: mysql.connector.plugins
+2025-08-04 12:30:26,059 - INFO - plugin_name: caching_sha2_password
+2025-08-04 12:30:26,059 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-04 12:30:26,059 - INFO - package: mysql.connector.plugins
+2025-08-04 12:30:26,059 - INFO - plugin_name: mysql_native_password
+2025-08-04 12:30:26,060 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-04 12:30:33,831 - INFO - Successfully created DB engine.
+2025-08-04 12:30:43,423 - INFO - Successfully created DB engine.
+2025-08-04 12:30:43,482 - INFO - Successfully created DB engine.
