@@ -509,7 +509,7 @@ def parametrs_view(request):
 def results_view(request):
     """
     Generates and displays seismic analysis results and plots.
-    For one selected parameter and multiple wells, splits into paginated HTML files (5 wells per file).
+    For multiple wells and parameters, combine all graphs into a single HTML file.
     """
     selected_keys = request.session.get('selected_keys', [])
     selected_params = request.session.get('selected_params', [])
@@ -529,7 +529,7 @@ def results_view(request):
     try:
         file_path = os.path.join(settings.MEDIA_ROOT, excel_file)
         if not os.path.exists(file_path):
-            return render(request, 'results.html', {'error': 'Yuklangan Excel fayl topilmadi.'})
+            return render(request, 'results.html', {'error': 'Yuklangan Excel fayli topilmadi.'})
 
         dfe = pd.read_excel(file_path)
         required_cols = [DATE_COLUMN, TIME_COLUMN, LATITUDE_COLUMN, LONGITUDE_COLUMN, MAIN_MAGNITUDE_COLUMN, SECONDARY_MAGNITUDE_COLUMN]
@@ -545,14 +545,11 @@ def results_view(request):
         conn = engine.connect()
 
         plot_files = []
-        chunk_size = 5  # Har 5 ta quduq bitta grafik faylga joylanadi
+        graph_data = []
 
-        if len(selected_params) == 1:
-            element = selected_params[0]
-            valid_keys = []
-            quduq_data = []
-            for key in selected_keys:
-                ssdi_id = lst_stansiya.get(key, {}).get(element)
+        for key in selected_keys:
+            for param in selected_params:
+                ssdi_id = lst_stansiya.get(key, {}).get(param)
                 if not ssdi_id:
                     continue
                 query = text(f"SELECT date, `{ssdi_id}` FROM alldata WHERE `{ssdi_id}` IS NOT NULL")
@@ -563,58 +560,54 @@ def results_view(request):
                 y_val = [row[1] for row in data]
                 mean, sigma = np.mean(y_val), np.std(y_val)
                 stansiya, skvajina = key.split(' | ')
-                quduq_data.append((x_val, y_val, mean, sigma, element, key, skvajina))
-                valid_keys.append(key)
+                graph_data.append((x_val, y_val, mean, sigma, param, key, skvajina))
 
-            # Sahifalash (5 tadan bo‘lib chiqarish)
-            for i in range(0, len(quduq_data), chunk_size):
-                chunk = quduq_data[i:i + chunk_size]
-                color_pool = generate_colors(len(chunk))
-                fig = make_subplots(
-                    rows=len(chunk), cols=1,
-                    subplot_titles=[f"{key} - {element}" for (_, _, _, _, _, key, _) in chunk],
-                    vertical_spacing=min(0.04, round(1 / (max(2, len(chunk) - 1)), 4)),
-                    specs=[[{"secondary_y": True}] for _ in chunk]
-                )
+        if not graph_data:
+            return render(request, 'results.html', {'error': 'Hech qanday mos keluvchi maʼlumot topilmadi.'})
 
-                fig.update_layout(
-                    height=max(700, len(chunk) * 500),
-                    width=2000,
-                    title_text=f"{element} bo‘yicha {i + 1}–{i + len(chunk)}-quduqlar grafiklari",
-                    showlegend=True,
-                    plot_bgcolor='gainsboro',
-                    hovermode='x unified'
-                )
+        color_pool = generate_colors(len(graph_data))
+        fig = make_subplots(
+            rows=len(graph_data), cols=1,
+            subplot_titles=[f"{key} - {param}" for (_, _, _, _, param, key, _) in graph_data],
+            vertical_spacing=min(0.04, round(1 / (max(2, len(graph_data) - 1)), 4)),
+            specs=[[{"secondary_y": True}] for _ in graph_data]
+        )
 
-                for idx, (x, y, mean, sigma, param, key, skv) in enumerate(chunk):
-                    row = idx + 1
-                    trace_color = color_pool[idx]
-                    y_all = plot_data_with_anomalies(fig, x, y, mean, sigma, btn_value, row, 1, trace_color, param, key)
-                    fig.update_yaxes(title_text=f"{param} Qiymati", range=[min(y_all)*0.9, max(y_all)*1.1], row=row, col=1)
+        fig.update_layout(
+            height=max(700, len(graph_data) * 500),
+            width=2000,
+            title_text="Tanlangan barcha quduq va parametrlar uchun grafiklar",
+            showlegend=True,
+            plot_bgcolor='gainsboro',
+            hovermode='x unified'
+        )
 
-                    lat, lon = well_coords.get(skv, (0, 0))
-                    result_df = process_dataframe(
-                        dfe, min_mag, min_mlgr, lat, lon,
-                        DATE_COLUMN, TIME_COLUMN, LATITUDE_COLUMN, LONGITUDE_COLUMN,
-                        MAIN_MAGNITUDE_COLUMN, SECONDARY_MAGNITUDE_COLUMN
-                    )
-                    draw_magnitude_values(fig, result_df, row)
-                    fig.update_xaxes(tickformat="%Y", showgrid=True, griddash='dot', dtick="M12", row=row, col=1)
+        for idx, (x, y, mean, sigma, param, key, skv) in enumerate(graph_data):
+            row = idx + 1
+            trace_color = color_pool[idx]
+            y_all = plot_data_with_anomalies(fig, x, y, mean, sigma, btn_value, row, 1, trace_color, param, key)
+            fig.update_yaxes(title_text=f"{param} Qiymati", range=[min(y_all)*0.9, max(y_all)*1.1], row=row, col=1)
 
-                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                safe_element = re.sub(r'[\\/:*?"<>|]', '_', element)
-                file_name = f"{safe_element}_part_{(i // chunk_size) + 1}.html"
-                filepath = os.path.join(settings.MEDIA_ROOT, file_name)
-                try:
-                    fig.write_html(filepath, include_plotlyjs='cdn')
-                    plot_files.append({'element': f"{element} ({i + 1}–{i + len(chunk)})", 'file_url': f"{settings.MEDIA_URL}{file_name}"})
-                except BrokenPipeError:
-                    logging.warning("Broken pipe while writing plot.")
+            lat, lon = well_coords.get(skv, (0, 0))
+            result_df = process_dataframe(
+                dfe, min_mag, min_mlgr, lat, lon,
+                DATE_COLUMN, TIME_COLUMN, LATITUDE_COLUMN, LONGITUDE_COLUMN,
+                MAIN_MAGNITUDE_COLUMN, SECONDARY_MAGNITUDE_COLUMN
+            )
+            draw_magnitude_values(fig, result_df, row)
+            fig.update_xaxes(tickformat="%Y", showgrid=True, griddash='dot', dtick="M12", row=row, col=1)
 
-            return render(request, 'results.html', {'plot_files': plot_files})
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        file_name = f"multi_wells_all_params_{timestamp}.html"
+        filepath = os.path.join(settings.MEDIA_ROOT, file_name)
 
-        else:
-            return render(request, 'results.html', {'error': 'Ushbu sahifalash rejimi faqat bitta parametr uchun ishlaydi.'})
+        try:
+            fig.write_html(filepath, include_plotlyjs='cdn')
+            plot_files.append({'element': 'Barchasi', 'file_url': f"{settings.MEDIA_URL}{file_name}"})
+        except BrokenPipeError:
+            logging.warning("Broken pipe while writing plot.")
+
+        return render(request, 'results.html', {'plot_files': plot_files})
 
     except Exception as e:
         logging.error(f"Results view error: {e}")
@@ -623,4 +616,5 @@ def results_view(request):
     finally:
         if 'conn' in locals(): conn.close()
         if 'engine' in locals(): engine.dispose()
+
 
