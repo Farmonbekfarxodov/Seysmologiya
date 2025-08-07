@@ -26,14 +26,9 @@ TIME_COLUMN = 'Time'
 LATITUDE_COLUMN = 'Latitude'
 LONGITUDE_COLUMN = 'Longitude'
 
-# Faqat Mb ni magnitudaning qiymati deb qabul qilamiz.
-# Excel faylingizdagi ustun nomlariga mos kelishini ta'minlang.
-# Sizning image_eb9809.png rasmida "Mk" va "Ml" ko'rsatilgan.
-# Agar "Mb" va "Ml" ustunlari bo'lsa, quyidagicha qiling:
-MAIN_MAGNITUDE_COLUMN = 'Mb' # Siz aytganingizdek Mb
-SECONDARY_MAGNITUDE_COLUMN = 'Ml' # Ml ustuni ma'lumotini o'qiymiz, lekin grafikda alohida ko'rsatmaymiz
+MAIN_MAGNITUDE_COLUMN = 'Mb'
+SECONDARY_MAGNITUDE_COLUMN = 'Ml'
 
-# Parametrlar guruhlari
 DEFAULT_ELEMENTS_GROUPS = {
     'gazli': ['He', 'H2', 'O2', 'N2', 'CH4', 'CO2'],
     'kimyoviy': ['F', 'C2H6', 'pH', 'Eh', 'HCO3', 'Cl2'],
@@ -132,13 +127,12 @@ def process_dataframe(df, min_mag, min_mlgr, well_lat, well_lon,
             return None
 
         df[main_mag_col] = pd.to_numeric(df[main_mag_col], errors='coerce')
-        df[secondary_mag_col] = pd.to_numeric(df[secondary_mag_col], errors='coerce') # Ml ham o'qiladi, lekin hozirda ishlatilmaydi
+        df[secondary_mag_col] = pd.to_numeric(df[secondary_mag_col], errors='coerce')
 
         df.dropna(subset=[main_mag_col], inplace=True)
         df = df[df[main_mag_col] >= min_mag].copy()
 
         df['R(km)'] = np.round(destenc_vectorized(well_lat, well_lon, df[lat_col], df[lon_col]))
-        # M/lgR hisoblashda faqat MAIN_MAGNITUDE_COLUMN (Mb) ishlatiladi
         df['M/lgR'] = np.where(df['R(km)'] > 1, df[main_mag_col] / np.log10(df['R(km)']), np.nan)
 
         df = df[df['M/lgR'] >= min_mlgr].copy()
@@ -159,7 +153,7 @@ def process_dataframe(df, min_mag, min_mlgr, well_lat, well_lon,
             current_datetime = row_data['combined_datetime']
             
             rows.append([current_datetime.strftime('%d.%m.%Y'), current_datetime.strftime('%H:%M:%S'), 
-                         row_data[main_mag_col], row_data[secondary_mag_col]]) # Ml qiymatini ham saqlaymiz, lekin ishlatmaymiz
+                         row_data[main_mag_col], row_data[secondary_mag_col]])
             rows.append([current_datetime.strftime('%d.%m.%Y'), (current_datetime + timedelta(seconds=1)).strftime('%H:%M:%S'), 0, 0])
 
         result = pd.DataFrame(rows, columns=[date_col, time_col, main_mag_col, secondary_mag_col])
@@ -194,8 +188,7 @@ def plot_data_with_anomalies(fig, x_val, y_val, mean, sigma, btn_value, row_idx,
     y_all_values = list(y_val)
     y_all_values.extend([upper_bound, lower_bound, mean])
 
-    # Y-o'q nomini olish (subplotda qaysi yref ishlatilishini aniqlash)
-    yaxis_index = (row_idx - 1) * 1 + col_idx  # faqat col_idx=1 uchun
+    yaxis_index = (row_idx - 1) * 1 + col_idx
     yref = 'y' if yaxis_index == 1 else f'y{2 * row_idx - 1}'
 
     # UB (Upper Bound) chizig'i
@@ -203,7 +196,7 @@ def plot_data_with_anomalies(fig, x_val, y_val, mean, sigma, btn_value, row_idx,
         type='line',
         x0=min(x_val), x1=max(x_val),
         y0=upper_bound, y1=upper_bound,
-        line=dict(color='green', width=1.5),
+        line=dict(color='green', width=1.5,),
         row=row_idx, col=col_idx,
         yref=yref, xref='x'
     )
@@ -211,7 +204,7 @@ def plot_data_with_anomalies(fig, x_val, y_val, mean, sigma, btn_value, row_idx,
         x=max(x_val), y=upper_bound,
         text=f"UB ({btn_value}σ)",
         showarrow=False,
-        font=dict(color='green'),
+        font=dict(color='green', size=10),
         xanchor='right',
         yanchor='bottom',
         row=row_idx, col=col_idx
@@ -222,7 +215,7 @@ def plot_data_with_anomalies(fig, x_val, y_val, mean, sigma, btn_value, row_idx,
         type='line',
         x0=min(x_val), x1=max(x_val),
         y0=mean, y1=mean,
-        line=dict(color='magenta', width=1.5),
+        line=dict(color='magenta', width=1.5,),
         row=row_idx, col=col_idx,
         yref=yref, xref='x'
     )
@@ -230,7 +223,7 @@ def plot_data_with_anomalies(fig, x_val, y_val, mean, sigma, btn_value, row_idx,
         x=max(x_val), y=mean,
         text="Mean",
         showarrow=False,
-        font=dict(color='magenta'),
+        font=dict(color='magenta', size=10),
         xanchor='right',
         yanchor='bottom',
         row=row_idx, col=col_idx
@@ -241,7 +234,7 @@ def plot_data_with_anomalies(fig, x_val, y_val, mean, sigma, btn_value, row_idx,
         type='line',
         x0=min(x_val), x1=max(x_val),
         y0=lower_bound, y1=lower_bound,
-        line=dict(color='blue', width=1.5),
+        line=dict(color='blue', width=1.5,),
         row=row_idx, col=col_idx,
         yref=yref, xref='x'
     )
@@ -249,7 +242,7 @@ def plot_data_with_anomalies(fig, x_val, y_val, mean, sigma, btn_value, row_idx,
         x=max(x_val), y=lower_bound,
         text=f"LB ({-btn_value}σ)",
         showarrow=False,
-        font=dict(color='blue'),
+        font=dict(color='blue', size=10),
         xanchor='right',
         yanchor='top',
         row=row_idx, col=col_idx
@@ -264,7 +257,7 @@ def plot_data_with_anomalies(fig, x_val, y_val, mean, sigma, btn_value, row_idx,
         name=f'{element_name} ({key_name})',
         showlegend=True,
         hoverinfo='x+y',
-        hovertemplate=f'Vaqt: %{{x}}<br>{element_name} Qiymati: %{{y}}<extra></extra>'
+        hovertemplate=f'Vaqt: %{{x|%Y-%m-%d %H:%M}}<br>{element_name} Qiymati: %{{y}}<extra></extra>'
     ), row=row_idx, col=col_idx, secondary_y=False)
 
     # Anomaliya chiziqlari
@@ -316,7 +309,7 @@ def plot_data_with_anomalies(fig, x_val, y_val, mean, sigma, btn_value, row_idx,
                         line=dict(color='red', width=3),
                         showlegend=False,
                         hoverinfo='x+y',
-                        hovertemplate='Vaqt: %{x}<br>Anomaliya: %{y}<extra></extra>'
+                        hovertemplate='Vaqt: %{x|%Y-%m-%d %H:%M}<br>Anomaliya: %{y}<extra></extra>'
                     ), row=row_idx, col=col_idx, secondary_y=False)
                 current_anomalous_segment_x = []
                 current_anomalous_segment_y = []
@@ -341,7 +334,7 @@ def plot_data_with_anomalies(fig, x_val, y_val, mean, sigma, btn_value, row_idx,
                     line=dict(color='red', width=3),
                     showlegend=False,
                     hoverinfo='x+y',
-                    hovertemplate='Vaqt: %{x}<br>Anomaliya: %{y}<extra></extra>'
+                    hovertemplate='Vaqt: %{x|%Y-%m-%d %H:%M}<br>Anomaliya: %{y}<extra></extra>'
                 ), row=row_idx, col=col_idx, secondary_y=False)
             current_anomalous_segment_x = []
             current_anomalous_segment_y = []
@@ -359,35 +352,19 @@ def plot_data_with_anomalies(fig, x_val, y_val, mean, sigma, btn_value, row_idx,
             line=dict(color='red', width=3),
             showlegend=False,
             hoverinfo='x+y',
-            hovertemplate='Vaqt: %{x}<br>Anomaliya: %{y}<extra></extra>'
+            hovertemplate='Vaqt: %{x|%Y-%m-%d %H:%M}<br>Anomaliya: %{y}<extra></extra>'
         ), row=row_idx, col=col_idx, secondary_y=False)
 
     return y_all_values
 
-
-
-
 def draw_magnitude_values(fig, result_df, row_index, col_index=1):
     """
     Seysmik Mb magnitudalarni ikkinchi Y-o'qda vertikal zangori chiziqlar orqali chizadi.
-    :param fig: Plotly Figure ob'ekti.
-    :param result_df: process_dataframe dan qaytgan DataFrame.
-    :param row_index: Subplotning qator indeksi.
-    :param col_index: Subplotning ustun indeksi.
     """
     if result_df is None or result_df.empty:
         logging.info(f"draw_magnitude_values: result_df is empty for row {row_index}")
         return [0, 1]
 
-    # Debug: ma'lumotlarni ko'rish
-    # print("=== result_df ustunlari ===")
-    # print(result_df.columns)
-    # print("=== result_df namunasi ===")
-    # print(result_df.head())
-
-    
-
-    # Faqat Mb > 0 bo'lgan qiymatlarni olib
     filtered_main_mag = result_df[result_df[MAIN_MAGNITUDE_COLUMN] > 0][MAIN_MAGNITUDE_COLUMN]
     max_mag_for_y_axis = filtered_main_mag.max() * 1.1 if not filtered_main_mag.empty else 0.1
     min_mag_for_y_axis = 0
@@ -410,11 +387,9 @@ def draw_magnitude_values(fig, result_df, row_index, col_index=1):
         time_str = row['datetime_combined'].strftime('%d.%m.%Y %H:%M:%S')
         mag_val = row[MAIN_MAGNITUDE_COLUMN]
 
-        # Vertikal chiziqning ikki uchi + NaN ajratuvchi
         stem_x.extend([row['datetime_combined'], row['datetime_combined'], None])
         stem_y.extend([0, mag_val, None])
 
-        # Faqat yuqori nuqtada hover bo'ladi
         hover_texts.extend(["", f"Vaqt: {time_str}<br>Mb: {mag_val:.2f}", ""])
 
     if stem_x:
@@ -428,10 +403,9 @@ def draw_magnitude_values(fig, result_df, row_index, col_index=1):
             text=hover_texts,
             showlegend=True,
             legendgroup='magnitudes_mb',
-            yaxis='y2'
+            yaxis=f'y{2 * row_index}'
         ), row=row_index, col=col_index, secondary_y=True)
 
-    # Gridlar
     fig.update_xaxes(showgrid=True, gridwidth=0.15, gridcolor='black', griddash='dot',
                      row=row_index, col=col_index)
     fig.update_yaxes(showgrid=True, gridwidth=0.15, gridcolor='black', griddash='dot',
@@ -464,9 +438,7 @@ def selection_view(request):
             })
 
         if not selected_params:
-            for group_name, params_list in DEFAULT_ELEMENTS_GROUPS.items():
-                selected_params.extend(params_list)
-            selected_params = sorted(list(set(selected_params)))
+            selected_params = sorted(list(set(sum(DEFAULT_ELEMENTS_GROUPS.values(), []))))
 
         request.session['selected_keys'] = selected_keys
         request.session['selected_params'] = selected_params
@@ -506,10 +478,11 @@ def parametrs_view(request):
             return render(request, 'parametrs.html', {'error': f'Xato yuz berdi: {e}. Iltimos, qayta urinib ko‘ring.'})
     return render(request, 'parametrs.html')
 
+
 def results_view(request):
     """
-    Generates and displays seismic analysis results and plots.
-    For multiple wells and parameters, combine all graphs into a single HTML file.
+    Generates and displays seismic analysis results with graphs, and a separate map
+    at the bottom of the page.
     """
     selected_keys = request.session.get('selected_keys', [])
     selected_params = request.session.get('selected_params', [])
@@ -521,10 +494,18 @@ def results_view(request):
     if not all([selected_keys, excel_file, min_mag is not None, btn_value is not None, min_mlgr is not None]):
         return render(request, 'results.html', {'error': 'To‘liq maʼlumotlar mavjud emas. Iltimos, oldingi qadamlarga qayting.'})
 
+    calculated_R_km = None
+    if min_mlgr != 0:
+        try:
+            calculated_R_km = 10**(min_mag / min_mlgr)
+            logging.info(f"Hisoblangan radius(R): {calculated_R_km} km")
+        except ValueError:
+            logging.warning("M/lgr qiymati noto'g'ri, R ni hisoblab bo'lmadi.")
+    else:
+        logging.warning("M/lgr ning qiymati nolga teng, R ni hisoblab bo'lmaydi")
+
     if not selected_params:
-        for group in DEFAULT_ELEMENTS_GROUPS.values():
-            selected_params.extend(group)
-        selected_params = sorted(set(selected_params))
+        selected_params = sorted(list(set(sum(DEFAULT_ELEMENTS_GROUPS.values(), []))))
 
     try:
         file_path = os.path.join(settings.MEDIA_ROOT, excel_file)
@@ -544,9 +525,7 @@ def results_view(request):
         engine = connect_db()
         conn = engine.connect()
 
-        plot_files = []
         graph_data = []
-
         for key in selected_keys:
             for param in selected_params:
                 ssdi_id = lst_stansiya.get(key, {}).get(param)
@@ -565,49 +544,125 @@ def results_view(request):
         if not graph_data:
             return render(request, 'results.html', {'error': 'Hech qanday mos keluvchi maʼlumot topilmadi.'})
 
-        color_pool = generate_colors(len(graph_data))
+        # --- Grafiklar uchun subplot yaratish ---
+        num_graphs = len(graph_data)
+        subplot_titles = [f"{key} - {param}" for (_, _, _, _, param, key, _) in graph_data]
+        
+        # Xarita uchun oxiriga bitta bo'sh joy qo'shamiz
+        subplot_titles.append("Skvajinalar joylashgan xarita")
+        
+        # Xarita subplotining balandligini oshirish uchun row_heights listini yaratish
+        row_heights = [1] * num_graphs + [2]  # Xarita 2 birlik balandlikda, boshqalar 1 birlikda
+        
         fig = make_subplots(
-            rows=len(graph_data), cols=1,
-            subplot_titles=[f"{key} - {param}" for (_, _, _, _, param, key, _) in graph_data],
-            vertical_spacing=min(0.04, round(1 / (max(2, len(graph_data) - 1)), 4)),
-            specs=[[{"secondary_y": True}] for _ in graph_data]
+            rows=num_graphs + 1, cols=1,
+            subplot_titles=subplot_titles,
+            vertical_spacing=0.03, # Bo'shliqni biroz kamaytirish
+            row_heights=row_heights,
+            specs=[[{"secondary_y": True}]] * num_graphs + [[{"type": "mapbox"}]]
         )
 
-        fig.update_layout(
-            height=max(700, len(graph_data) * 500),
-            width=2000,
-            title_text="Tanlangan barcha quduq va parametrlar uchun grafiklar",
-            showlegend=True,
-            plot_bgcolor='gainsboro',
-            hovermode='x unified'
-        )
-
+        # --- Grafiklar chizish qismi ---
+        color_pool = generate_colors(num_graphs)
         for idx, (x, y, mean, sigma, param, key, skv) in enumerate(graph_data):
-            row = idx + 1
+            row, col = idx + 1, 1
             trace_color = color_pool[idx]
-            y_all = plot_data_with_anomalies(fig, x, y, mean, sigma, btn_value, row, 1, trace_color, param, key)
-            fig.update_yaxes(title_text=f"{param} Qiymati", range=[min(y_all)*0.9, max(y_all)*1.1], row=row, col=1)
-
+            y_all = plot_data_with_anomalies(fig, x, y, mean, sigma, btn_value, row, col, trace_color, param, key)
+            fig.update_yaxes(title_text=f"{param} Qiymati", range=[min(y_all)*0.9, max(y_all)*1.1], row=row, col=col)
+            
             lat, lon = well_coords.get(skv, (0, 0))
             result_df = process_dataframe(
                 dfe, min_mag, min_mlgr, lat, lon,
                 DATE_COLUMN, TIME_COLUMN, LATITUDE_COLUMN, LONGITUDE_COLUMN,
                 MAIN_MAGNITUDE_COLUMN, SECONDARY_MAGNITUDE_COLUMN
             )
-            draw_magnitude_values(fig, result_df, row)
-            fig.update_xaxes(tickformat="%Y", showgrid=True, griddash='dot', dtick="M12", row=row, col=1)
+            draw_magnitude_values(fig, result_df, row, col)
+            fig.update_xaxes(tickformat="%Y", showgrid=True, griddash='dot', dtick="M12", row=row, col=col)
 
+        # --- Xaritani chizish qismi (eng oxirgi subplotga) ---
+        map_row = num_graphs + 1
+        
+        map_df = pd.DataFrame(columns=['lat', 'lon', 'name'])
+        for key in selected_keys:
+            stansiya, skvajina = key.split(' | ')
+            lat, lon = well_coords.get(skvajina, (None, None))
+            if lat is not None and lon is not None:
+                map_df = pd.concat([map_df, pd.DataFrame([{'lat': lat, 'lon': lon, 'name': skvajina}])], ignore_index=True)
+
+        if not map_df.empty:
+            # Skvajina nuqtalari
+            fig.add_trace(go.Scattermapbox(
+                lat=map_df['lat'],
+                lon=map_df['lon'],
+                mode='markers+text',
+                marker=go.scattermapbox.Marker(
+                    size=14,
+                    color='red',
+                    symbol='marker'
+                ),
+                text=map_df['name'],
+                textposition="bottom right",
+                hoverinfo='text',
+                hovertemplate="Skvajina: %{text}",
+                name="Skvajinalar",
+                showlegend=False
+            ), row=map_row, col=1)
+
+            # Radiuslarni chizish
+            if calculated_R_km is not None:
+                for _, row_data in map_df.iterrows():
+                    lats, lons, hover_texts = [], [], []
+                    for i in range(0, 361, 10):
+                        angle = i * pi / 180
+                        lat_offset = (calculated_R_km / 111.32) * cos(angle)
+                        lon_offset = (calculated_R_km / 111.32) * sin(angle) / cos(row_data['lat'] * pi / 180)
+                        
+                        lats.append(row_data['lat'] + lat_offset)
+                        lons.append(row_data['lon'] + lon_offset)
+                        hover_texts.append(f"Skvajina: {row_data['name']}<br>Radius: {calculated_R_km:.2f} km")
+                    
+                    fig.add_trace(go.Scattermapbox(
+                        lat=lats,
+                        lon=lons,
+                        mode='lines',
+                        line=go.scattermapbox.Line(color='blue', width=2),
+                        hoverinfo='text',
+                        text=hover_texts,
+                        name=f"Ta'sir radiusi ({row_data['name']})",
+                        opacity=0.5
+                    ), row=map_row, col=1)
+
+        # --- Layoutni sozlash ---
+        fig.update_layout(
+            title_text="Tahlil natijalari",
+            height=max(700, (num_graphs * 400) + 800), # Rasm balandligini oshirish
+            width=2000,
+            showlegend=True,
+            plot_bgcolor='gainsboro',
+            hovermode='x unified',
+            mapbox_style="open-street-map",
+            mapbox_center=go.layout.mapbox.Center(
+                lat=map_df['lat'].mean() if not map_df.empty else 41.2995,
+                lon=map_df['lon'].mean() if not map_df.empty else 69.2401
+            ),
+            mapbox_zoom=6,
+            dragmode = "pan",
+            legend=dict(x=0.01, y=1.0)
+        )
+
+        # ... (Natijani saqlash va ko'rsatish qismi o'zgarishsiz) ...
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        file_name = f"multi_wells_all_params_{timestamp}.html"
+        file_name = f"full_analysis_{timestamp}.html"
         filepath = os.path.join(settings.MEDIA_ROOT, file_name)
 
         try:
             fig.write_html(filepath, include_plotlyjs='cdn')
-            plot_files.append({'element': 'Barchasi', 'file_url': f"{settings.MEDIA_URL}{file_name}"})
+            plot_file = {'element': 'Barcha tahlillar', 'file_url': f"{settings.MEDIA_URL}{file_name}"}
         except BrokenPipeError:
             logging.warning("Broken pipe while writing plot.")
+            plot_file = {'error': 'Grafik faylini yozishda xato. Iltimos, qayta urinib ko‘ring.'}
 
-        return render(request, 'results.html', {'plot_files': plot_files})
+        return render(request, 'results.html', {'plot_files': [plot_file]})
 
     except Exception as e:
         logging.error(f"Results view error: {e}")
@@ -616,5 +671,3 @@ def results_view(request):
     finally:
         if 'conn' in locals(): conn.close()
         if 'engine' in locals(): engine.dispose()
-
-
