@@ -646,7 +646,6 @@ def results_view(request):
                 lon=map_df['lon'].mean() if not map_df.empty else 69.2401
             ),
             mapbox_zoom=6,
-            dragmode = "pan",
             legend=dict(x=0.01, y=1.0)
         )
 

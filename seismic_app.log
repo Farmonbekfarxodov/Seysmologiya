@@ -243,3 +243,32 @@ for more information on subplot types
 2025-08-07 12:25:41,682 - INFO - Successfully created DB engine.
 2025-08-07 12:25:41,733 - INFO - Successfully created DB engine.
 2025-08-07 12:25:41,891 - ERROR - Results view error: /media/full_analysis_20250807_122541.html
+2025-08-08 12:10:16,563 - WARNING - Not Found: /
+2025-08-08 12:10:19,684 - INFO - Successfully created DB engine.
+2025-08-08 12:10:19,724 - INFO - package: mysql.connector.plugins
+2025-08-08 12:10:19,724 - INFO - plugin_name: caching_sha2_password
+2025-08-08 12:10:19,724 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-08 12:10:19,725 - INFO - package: mysql.connector.plugins
+2025-08-08 12:10:19,725 - INFO - plugin_name: mysql_native_password
+2025-08-08 12:10:19,725 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-08 12:10:26,623 - INFO - Successfully created DB engine.
+2025-08-08 12:10:33,262 - INFO - Hisoblangan radius(R): 100.0 km
+2025-08-08 12:10:34,722 - INFO - Successfully created DB engine.
+2025-08-08 12:10:34,777 - INFO - Successfully created DB engine.
+2025-08-11 04:44:31,841 - WARNING - Not Found: /
+2025-08-11 04:44:32,100 - WARNING - Not Found: /favicon.ico
+2025-08-11 04:44:36,268 - INFO - Successfully created DB engine.
+2025-08-11 04:44:36,335 - INFO - package: mysql.connector.plugins
+2025-08-11 04:44:36,335 - INFO - plugin_name: caching_sha2_password
+2025-08-11 04:44:36,335 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-11 04:44:36,335 - INFO - package: mysql.connector.plugins
+2025-08-11 04:44:36,335 - INFO - plugin_name: mysql_native_password
+2025-08-11 04:44:36,336 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-11 04:44:42,872 - INFO - Successfully created DB engine.
+2025-08-11 04:44:53,455 - INFO - Hisoblangan radius(R): 100.0 km
+2025-08-11 04:44:56,057 - INFO - Successfully created DB engine.
+2025-08-11 04:44:56,153 - INFO - Successfully created DB engine.
+2025-08-11 04:45:27,309 - INFO - Successfully created DB engine.
+2025-08-11 04:45:34,644 - INFO - Hisoblangan radius(R): 100.0 km
+2025-08-11 04:45:37,097 - INFO - Successfully created DB engine.
+2025-08-11 04:45:37,181 - INFO - Successfully created DB engine.
