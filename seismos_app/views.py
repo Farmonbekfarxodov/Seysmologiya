@@ -546,20 +546,26 @@ def results_view(request):
 
         # --- Grafiklar uchun subplot yaratish ---
         num_graphs = len(graph_data)
+        num_subplots = num_graphs + 1 # +1 xarita uchun
         subplot_titles = [f"{key} - {param}" for (_, _, _, _, param, key, _) in graph_data]
-        
-        # Xarita uchun oxiriga bitta bo'sh joy qo'shamiz
         subplot_titles.append("Skvajinalar joylashgan xarita")
         
-        # Xarita subplotining balandligini oshirish uchun row_heights listini yaratish
-        row_heights = [1] * num_graphs + [2]  # Xarita 2 birlik balandlikda, boshqalar 1 birlikda
+        # Balandliklarni hisoblash
+        single_graph_height = 400 
+        map_height = 800
+        map_height_ratio = map_height / single_graph_height
+        row_heights = [1.0] * num_graphs + [map_height_ratio]
+        total_figure_height = (num_graphs * single_graph_height) + map_height
         
+        specs = [[{"secondary_y": True}]] * num_graphs + [[{"type": "mapbox"}]]
+
         fig = make_subplots(
-            rows=num_graphs + 1, cols=1,
+            rows=num_subplots, 
+            cols=1,
             subplot_titles=subplot_titles,
-            vertical_spacing=0.03, # Bo'shliqni biroz kamaytirish
+            vertical_spacing=0.03,
             row_heights=row_heights,
-            specs=[[{"secondary_y": True}]] * num_graphs + [[{"type": "mapbox"}]]
+            specs=specs
         )
 
         # --- Grafiklar chizish qismi ---
@@ -635,7 +641,7 @@ def results_view(request):
         # --- Layoutni sozlash ---
         fig.update_layout(
             title_text="Tahlil natijalari",
-            height=max(700, (num_graphs * 400) + 800), # Rasm balandligini oshirish
+            height=total_figure_height, 
             width=2000,
             showlegend=True,
             plot_bgcolor='gainsboro',
@@ -649,24 +655,27 @@ def results_view(request):
             legend=dict(x=0.01, y=1.0)
         )
 
-        # ... (Natijani saqlash va ko'rsatish qismi o'zgarishsiz) ...
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        file_name = f"full_analysis_{timestamp}.html"
-        filepath = os.path.join(settings.MEDIA_ROOT, file_name)
-
-        try:
-            fig.write_html(filepath, include_plotlyjs='cdn')
-            plot_file = {'element': 'Barcha tahlillar', 'file_url': f"{settings.MEDIA_URL}{file_name}"}
-        except BrokenPipeError:
-            logging.warning("Broken pipe while writing plot.")
-            plot_file = {'error': 'Grafik faylini yozishda xato. Iltimos, qayta urinib ko‘ring.'}
-
-        return render(request, 'results.html', {'plot_files': [plot_file]})
+        # Plotly grafikini HTMLga o'tkazamiz
+        # full_html=False parametri faqat grafikni o'zini generatsiya qilishga yordam beradi
+        # config parametrlari orqali xarita zoom funksiyalarini sozlaymiz
+        config = {
+            'displayModeBar': True,
+            'scrollZoom': True,
+            'doubleClick': 'reset+autosize',
+            'modeBarButtonsToAdd': ['pan2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d'],
+            'responsive': True
+        }
+        plotly_html = fig.to_html(full_html=False, include_plotlyjs='cdn', config=config)
+        
+        # Natijani template'ga yuboramiz
+        return render(request, 'results.html', {'plotly_graph': plotly_html})
 
     except Exception as e:
         logging.error(f"Results view error: {e}")
         return render(request, 'results.html', {'error': f"Xatolik: {e}"})
 
     finally:
-        if 'conn' in locals(): conn.close()
-        if 'engine' in locals(): engine.dispose()
+        if 'conn' in locals(): 
+            conn.close()
+        if 'engine' in locals(): 
+            engine.dispose()
