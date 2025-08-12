@@ -1016,3 +1016,27 @@ line
 2025-08-12 08:50:42,286 - INFO - Hisoblangan radius(R): 100.0 km
 2025-08-12 08:50:43,742 - INFO - Successfully created DB engine.
 2025-08-12 08:50:43,794 - INFO - Successfully created DB engine.
+2025-08-12 09:06:43,636 - INFO - /home/asus/PROJECT/Seismo/seismo_project/urls.py changed, reloading.
+2025-08-12 09:06:46,657 - INFO - /home/asus/PROJECT/Seismo/seismo_project/urls.py changed, reloading.
+2025-08-12 09:06:52,897 - INFO - /home/asus/PROJECT/Seismo/seismo_project/urls.py changed, reloading.
+2025-08-12 09:09:41,036 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-12 09:09:43,137 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-12 09:10:08,495 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-12 09:10:11,613 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-12 09:10:18,948 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-12 09:11:06,558 - INFO - /home/asus/PROJECT/Seismo/seismo_project/urls.py changed, reloading.
+2025-08-12 09:14:41,463 - INFO - Successfully created DB engine.
+2025-08-12 09:14:41,504 - INFO - package: mysql.connector.plugins
+2025-08-12 09:14:41,504 - INFO - plugin_name: caching_sha2_password
+2025-08-12 09:14:41,504 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-12 09:14:41,504 - INFO - package: mysql.connector.plugins
+2025-08-12 09:14:41,504 - INFO - plugin_name: mysql_native_password
+2025-08-12 09:14:41,505 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-12 09:14:49,387 - INFO - Successfully created DB engine.
+2025-08-12 09:14:56,914 - INFO - Hisoblangan radius(R): 100.0 km
+2025-08-12 09:14:58,419 - INFO - Successfully created DB engine.
+2025-08-12 09:14:58,474 - INFO - Successfully created DB engine.
+2025-08-12 09:15:41,925 - INFO - Hisoblangan radius(R): 100.0 km
+2025-08-12 09:15:43,377 - INFO - Successfully created DB engine.
+2025-08-12 09:15:43,428 - INFO - Successfully created DB engine.
+2025-08-12 09:31:42,037 - INFO - Successfully created DB engine.
