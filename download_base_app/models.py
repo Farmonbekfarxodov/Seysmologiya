@@ -18,8 +18,7 @@ class Well(models.Model):
         return f"{self.station.db_name} - {self.db_name}"
 
 class HydrogenSeismology(models.Model):
-    # Oldingi model o'zgarishsiz qoladi
-    # ...
+    station_code = models.CharField(max_length=255, null=True, blank=True)
     well_code = models.CharField(max_length=255)
     date = models.DateTimeField(null=True, blank=True)
     he = models.FloatField(null=True, blank=True)
