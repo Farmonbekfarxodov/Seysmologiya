@@ -1,9 +1,9 @@
 import os
 import json
 import logging
-from math import pi, sqrt, sin, cos, atan2, log10
-from datetime import datetime, timedelta
-import random
+from math import pi, sin, cos
+from datetime import timedelta
+
 
 import pandas as pd
 import numpy as np
@@ -14,7 +14,7 @@ from sqlalchemy import create_engine, text, exc
 from plotly.subplots import make_subplots
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-import re
+
 
 # Setup logging
 logging.basicConfig(
@@ -601,6 +601,8 @@ def selection_view(request):
     """
     Handles the selection of wells and parametrs for analysis.
     """
+
+
     lst_stansiya, _ = fetch_data()
     all_params = []
     for group_name, params_list in DEFAULT_ELEMENTS_GROUPS.items():
@@ -614,7 +616,7 @@ def selection_view(request):
         if not selected_keys:
             return render(
                 request,
-                "selection.html",
+                "seismos_app/selection.html",
                 {
                     "wells": lst_stansiya.keys(),
                     "params": all_params,
@@ -629,10 +631,10 @@ def selection_view(request):
 
         request.session["selected_keys"] = selected_keys
         request.session["selected_params"] = selected_params
-        return redirect("parametrs")
+        return redirect("seismos:parametrs")
 
     return render(
-        request, "selection.html", {"wells": lst_stansiya.keys(), "params": all_params}
+        request, "seismos_app/selection.html", {"wells": lst_stansiya.keys(), "params": all_params}
     )
 
 
@@ -649,7 +651,7 @@ def parametrs_view(request):
             if "excel_file" not in request.FILES:
                 return render(
                     request,
-                    "parametrs.html",
+                    "seismos_app/parametrs.html",
                     {"error": "Iltimos, Excel faylni yuklang."},
                 )
 
@@ -665,22 +667,22 @@ def parametrs_view(request):
                     "min_mlgr": min_mlgr,
                 }
             )
-            return redirect("results")
+            return redirect("seismos:results")
         except ValueError:
             logging.error("Invalid input for numeric parametrs.")
             return render(
                 request,
-                "parametrs.html",
+                "seismos_app/parametrs.html",
                 {"error": "Iltimos, barcha sonli maydonlarga to‘g‘ri qiymat kiriting."},
             )
         except Exception as e:
             logging.error(f"Parameter input or file upload error: {e}")
             return render(
                 request,
-                "parametrs.html",
+                "seismos_app/parametrs.html",
                 {"error": f"Xato yuz berdi: {e}. Iltimos, qayta urinib ko‘ring."},
             )
-    return render(request, "parametrs.html")
+    return render(request, "seismos_app/parametrs.html")
 
 
 def results_view(request):
@@ -706,7 +708,7 @@ def results_view(request):
     ):
         return render(
             request,
-            "results.html",
+            "seismos_app/results.html",
             {
                 "error": "To‘liq maʼlumotlar mavjud emas. Iltimos, oldingi qadamlarga qayting."
             },
@@ -729,7 +731,7 @@ def results_view(request):
         file_path = os.path.join(settings.MEDIA_ROOT, excel_file)
         if not os.path.exists(file_path):
             return render(
-                request, "results.html", {"error": "Yuklangan Excel fayli topilmadi."}
+                request, "seismos_app/results.html", {"error": "Yuklangan Excel fayli topilmadi."}
             )
 
         dfe = pd.read_excel(file_path)
@@ -745,7 +747,7 @@ def results_view(request):
             missing = [col for col in required_cols if col not in dfe.columns]
             return render(
                 request,
-                "results.html",
+                "seismos_app/results.html",
                 {
                     "error": f"Excel faylida kerakli ustunlar yo‘q: {', '.join(missing)}."
                 },
@@ -754,7 +756,7 @@ def results_view(request):
         lst_stansiya, well_coords = fetch_data()
         if not lst_stansiya or not well_coords:
             return render(
-                request, "results.html", {"error": "Bazadan maʼlumotlar olinmadi."}
+                request, "seismos_app/results.html", {"error": "Bazadan maʼlumotlar olinmadi."}
             )
 
         engine = connect_db()
@@ -781,7 +783,7 @@ def results_view(request):
         if not graph_data:
             return render(
                 request,
-                "results.html",
+                "seismos_app/results.html",
                 {"error": "Hech qanday mos keluvchi maʼlumot topilmadi."},
             )
 
@@ -976,11 +978,10 @@ def results_view(request):
         )
 
         # Plotly grafikini HTMLga o'tkazamiz
-        # full_html=False parametri faqat grafikni o'zini generatsiya qilishga yordam beradi
-        # config parametrlari orqali xarita zoom funksiyalarini sozlaymiz
+        # Barcha zoom funksiyalari yoqilgan (scroll, buttonlar, pan)
         config = {
             "displayModeBar": True,
-            "scrollZoom": True,
+            "scrollZoom": True,  # Scroll zoom barcha joyda yoqilgan
             "doubleClick": "reset+autosize",
             "modeBarButtonsToAdd": [
                 "pan2d",
@@ -993,14 +994,12 @@ def results_view(request):
         }
         plotly_html = fig.to_html(
             full_html=False, include_plotlyjs="cdn", config=config
-        )
-
-        # Natijani template'ga yuboramiz
-        return render(request, "results.html", {"plotly_graph": plotly_html})
+        )  # Natijani template'ga yuboramiz
+        return render(request, "seismos_app/results.html", {"plotly_graph": plotly_html})
 
     except Exception as e:
         logging.error(f"Results view error: {e}")
-        return render(request, "results.html", {"error": f"Xatolik: {e}"})
+        return render(request, "seismos_app/results.html", {"error": f"Xatolik: {e}"})
 
     finally:
         if "conn" in locals():

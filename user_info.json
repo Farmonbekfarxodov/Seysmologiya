@@ -1,1 +1,15 @@
-{"ip": "localhost", "user": "root", "psw": "1111", "db": "seismik"}
+{"ip": "localhost",
+
+ "user": "root",
+
+ "psw": "1111", 
+
+ "db": "seismik",
+
+ "site":"geofizik.uz",
+
+ "login":"Rasulov Alisher",
+
+ "parol":"rasulovalisher"
+}
+

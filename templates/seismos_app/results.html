@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+</div> <!-- Close the container from base.html -->
+<div class="w-100 m-0 p-0">
+    <div class="px-3 py-2">
+        <h2>Grafik natijalar</h2>
+    </div>
+
+    {% if error %}
+        <div class="alert alert-danger mx-3">{{ error }}</div>
+    {% elif plotly_graph %}
+        <div class="w-100 m-0 p-0">
+            <div class="w-100 m-0 p-0">
+                {{ plotly_graph | safe }}
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-warning mx-3">
+            Natijalar hozircha mavjud emas. Iltimos, maʼlumotlarni kiriting.
+        </div>
+    {% endif %}
+</div>
+<div class="container mt-4"> <!-- Reopen container for other content if needed -->
+{% endblock %}

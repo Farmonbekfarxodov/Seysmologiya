@@ -7,8 +7,9 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('seismos/',include('seismos_app.urls',namespace="seismos")),
+    path('upload/',include('download_base_app.urls',namespace="download_base")),
     path('', TemplateView.as_view(template_name='index.html'), name='index'),
-    path('seismos/',include('seismos_app.urls')),
 ]
 
 
