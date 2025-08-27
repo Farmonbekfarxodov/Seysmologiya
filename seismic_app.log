@@ -3855,3 +3855,161 @@ Traceback (most recent call last):
   File "/home/asus/PROJECT/Seismo/.venv/lib/python3.12/site-packages/MySQLdb/connections.py", line 280, in query
     _mysql.connection.query(self, query)
 django.db.utils.ProgrammingError: (1146, "Table 'seismik.download_base_app_station' doesn't exist")
+2025-08-27 10:03:10,958 - INFO - Successfully created DB engine.
+2025-08-27 10:03:10,998 - INFO - package: mysql.connector.plugins
+2025-08-27 10:03:10,998 - INFO - plugin_name: caching_sha2_password
+2025-08-27 10:03:10,998 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-27 10:03:10,999 - INFO - package: mysql.connector.plugins
+2025-08-27 10:03:10,999 - INFO - plugin_name: mysql_native_password
+2025-08-27 10:03:10,999 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-27 10:03:29,725 - INFO - Successfully created DB engine.
+2025-08-27 10:03:41,989 - INFO - Hisoblangan radius(R): 21.544346900318832 km
+2025-08-27 10:03:43,486 - INFO - Successfully created DB engine.
+2025-08-27 10:03:43,543 - INFO - Successfully created DB engine.
+2025-08-27 10:09:08,092 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:09:18,996 - INFO - Hisoblangan radius(R): 21.544346900318832 km
+2025-08-27 10:09:20,584 - INFO - Successfully created DB engine.
+2025-08-27 10:09:20,635 - INFO - package: mysql.connector.plugins
+2025-08-27 10:09:20,636 - INFO - plugin_name: caching_sha2_password
+2025-08-27 10:09:20,636 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-27 10:09:20,636 - INFO - package: mysql.connector.plugins
+2025-08-27 10:09:20,636 - INFO - plugin_name: mysql_native_password
+2025-08-27 10:09:20,636 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-27 10:09:20,657 - INFO - Successfully created DB engine.
+2025-08-27 10:13:03,582 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:13:11,463 - INFO - Hisoblangan radius(R): 21.544346900318832 km
+2025-08-27 10:13:13,007 - INFO - Successfully created DB engine.
+2025-08-27 10:13:13,060 - INFO - package: mysql.connector.plugins
+2025-08-27 10:13:13,060 - INFO - plugin_name: caching_sha2_password
+2025-08-27 10:13:13,060 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-27 10:13:13,061 - INFO - package: mysql.connector.plugins
+2025-08-27 10:13:13,061 - INFO - plugin_name: mysql_native_password
+2025-08-27 10:13:13,061 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-27 10:13:13,081 - INFO - Successfully created DB engine.
+2025-08-27 10:14:22,003 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:14:35,600 - INFO - Hisoblangan radius(R): 21.544346900318832 km
+2025-08-27 10:14:37,197 - INFO - Successfully created DB engine.
+2025-08-27 10:14:37,253 - INFO - package: mysql.connector.plugins
+2025-08-27 10:14:37,253 - INFO - plugin_name: caching_sha2_password
+2025-08-27 10:14:37,253 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-27 10:14:37,253 - INFO - package: mysql.connector.plugins
+2025-08-27 10:14:37,253 - INFO - plugin_name: mysql_native_password
+2025-08-27 10:14:37,254 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-27 10:14:37,274 - INFO - Successfully created DB engine.
+2025-08-27 10:17:04,222 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:17:13,752 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:17:17,882 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:17:21,036 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:17:47,970 - INFO - Hisoblangan radius(R): 21.544346900318832 km
+2025-08-27 10:17:49,561 - INFO - Successfully created DB engine.
+2025-08-27 10:17:49,601 - INFO - package: mysql.connector.plugins
+2025-08-27 10:17:49,601 - INFO - plugin_name: caching_sha2_password
+2025-08-27 10:17:49,601 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-27 10:17:49,601 - INFO - package: mysql.connector.plugins
+2025-08-27 10:17:49,601 - INFO - plugin_name: mysql_native_password
+2025-08-27 10:17:49,602 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-27 10:17:49,621 - INFO - Successfully created DB engine.
+2025-08-27 10:18:03,865 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:18:08,240 - INFO - Hisoblangan radius(R): 21.544346900318832 km
+2025-08-27 10:18:09,815 - INFO - Successfully created DB engine.
+2025-08-27 10:18:09,853 - INFO - package: mysql.connector.plugins
+2025-08-27 10:18:09,853 - INFO - plugin_name: caching_sha2_password
+2025-08-27 10:18:09,853 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-27 10:18:09,854 - INFO - package: mysql.connector.plugins
+2025-08-27 10:18:09,854 - INFO - plugin_name: mysql_native_password
+2025-08-27 10:18:09,854 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-27 10:18:09,874 - INFO - Successfully created DB engine.
+2025-08-27 10:18:21,089 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:18:22,725 - INFO - Hisoblangan radius(R): 21.544346900318832 km
+2025-08-27 10:18:24,304 - INFO - Successfully created DB engine.
+2025-08-27 10:18:24,342 - INFO - package: mysql.connector.plugins
+2025-08-27 10:18:24,342 - INFO - plugin_name: caching_sha2_password
+2025-08-27 10:18:24,342 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-27 10:18:24,343 - INFO - package: mysql.connector.plugins
+2025-08-27 10:18:24,343 - INFO - plugin_name: mysql_native_password
+2025-08-27 10:18:24,343 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-27 10:18:24,363 - INFO - Successfully created DB engine.
+2025-08-27 10:20:36,325 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:20:42,243 - INFO - Hisoblangan radius(R): 21.544346900318832 km
+2025-08-27 10:20:43,849 - INFO - Successfully created DB engine.
+2025-08-27 10:20:43,897 - INFO - package: mysql.connector.plugins
+2025-08-27 10:20:43,897 - INFO - plugin_name: caching_sha2_password
+2025-08-27 10:20:43,897 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-27 10:20:43,897 - INFO - package: mysql.connector.plugins
+2025-08-27 10:20:43,897 - INFO - plugin_name: mysql_native_password
+2025-08-27 10:20:43,897 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-27 10:20:43,916 - INFO - Successfully created DB engine.
+2025-08-27 10:20:53,119 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:20:56,917 - INFO - Hisoblangan radius(R): 21.544346900318832 km
+2025-08-27 10:20:58,524 - INFO - Successfully created DB engine.
+2025-08-27 10:20:58,564 - INFO - package: mysql.connector.plugins
+2025-08-27 10:20:58,564 - INFO - plugin_name: caching_sha2_password
+2025-08-27 10:20:58,564 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-27 10:20:58,565 - INFO - package: mysql.connector.plugins
+2025-08-27 10:20:58,565 - INFO - plugin_name: mysql_native_password
+2025-08-27 10:20:58,565 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-27 10:20:58,585 - INFO - Successfully created DB engine.
+2025-08-27 10:21:07,788 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:21:10,280 - INFO - Hisoblangan radius(R): 21.544346900318832 km
+2025-08-27 10:21:11,814 - INFO - Successfully created DB engine.
+2025-08-27 10:21:11,852 - INFO - package: mysql.connector.plugins
+2025-08-27 10:21:11,852 - INFO - plugin_name: caching_sha2_password
+2025-08-27 10:21:11,852 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-27 10:21:11,852 - INFO - package: mysql.connector.plugins
+2025-08-27 10:21:11,852 - INFO - plugin_name: mysql_native_password
+2025-08-27 10:21:11,853 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-27 10:21:11,873 - INFO - Successfully created DB engine.
+2025-08-27 10:22:11,841 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:22:18,591 - INFO - Hisoblangan radius(R): 21.544346900318832 km
+2025-08-27 10:22:20,181 - INFO - Successfully created DB engine.
+2025-08-27 10:22:20,220 - INFO - package: mysql.connector.plugins
+2025-08-27 10:22:20,220 - INFO - plugin_name: caching_sha2_password
+2025-08-27 10:22:20,221 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-27 10:22:20,221 - INFO - package: mysql.connector.plugins
+2025-08-27 10:22:20,221 - INFO - plugin_name: mysql_native_password
+2025-08-27 10:22:20,221 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-27 10:22:20,242 - INFO - Successfully created DB engine.
+2025-08-27 10:23:22,994 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:23:25,249 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:23:30,340 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:23:33,426 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:35:58,808 - ERROR - Internal Server Error: /upload/upload/
+2025-08-27 10:36:26,534 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-27 10:36:32,804 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-27 10:37:17,580 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:37:19,755 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:37:21,881 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:37:29,050 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:37:31,230 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:37:36,362 - INFO - /home/asus/PROJECT/Seismo/seismos_app/views.py changed, reloading.
+2025-08-27 10:38:08,839 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-27 10:38:08,860 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-27 10:38:11,726 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-27 10:40:17,678 - ERROR - Internal Server Error: /upload/upload/
+2025-08-27 10:51:10,416 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-27 10:51:13,110 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-27 10:51:39,936 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-27 10:52:21,128 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-27 10:52:21,161 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-27 10:52:25,004 - INFO - Successfully created DB engine.
+2025-08-27 10:52:25,046 - INFO - package: mysql.connector.plugins
+2025-08-27 10:52:25,046 - INFO - plugin_name: caching_sha2_password
+2025-08-27 10:52:25,046 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-27 10:52:25,046 - INFO - package: mysql.connector.plugins
+2025-08-27 10:52:25,046 - INFO - plugin_name: mysql_native_password
+2025-08-27 10:52:25,046 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-27 10:52:25,116 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-27 11:09:55,221 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 11:11:33,426 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 11:12:26,189 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 11:20:48,485 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 11:23:13,570 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 11:24:37,811 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 11:24:44,992 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 11:25:32,726 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 11:25:39,887 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 11:26:01,184 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 11:26:07,276 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 11:26:11,388 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 11:26:25,594 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 11:26:27,673 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.

@@ -53,8 +53,8 @@ STATIONS_AND_WELLS = {
     "JMB": {
         "name": "Jumabozor",
         "wells": [
-            {"api_well": "Jumabozo'r 1", "db_well": "Jumabozor 1"},
-            {"api_well": "Jumabozo'r 2", "db_well": "Jumabozor 2"},
+            {"api_well": "Jumabozor 1", "db_well": "Jumabozor 1"},
+            {"api_well": "Jumabozor 2", "db_well": "Jumabozor 2"},
             {"api_well": "Navro'z", "db_well": "Navro'z"},
             {"api_well": "Ibn Sino", "db_well": "Ibn Sino"}
         ]
