@@ -8,10 +8,9 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 
-
 from .models import HydrogenSeismology
 
-# Stansiya va quduqlar ro'yxati (o'zgartirishlar kiritilishi mumkin)
+# Stansiya va quduqlar ro'yxati (API_code va DB_name)
 STATIONS_AND_WELLS = {
     "SMRM": {
         "name": "SMRM",
@@ -72,7 +71,6 @@ STATIONS_AND_WELLS = {
         "wells": [
             {"api_well": "Minora", "db_well": "Minora"},
             {"api_well": "GAI", "db_well": "GAI"},
-            
             {"api_well": "Chotqol", "db_well": "Chotqol"},
             {"api_well": "Ozodbosh bulog'i", "db_well": "Ozodbosh bulog'i"}
         ]
@@ -113,39 +111,38 @@ STATIONS_AND_WELLS = {
     },
 }
 
-
 LOGIN_URL = "https://api.geofizik.uz/api/login"
 DATA_URL = "https://api.geofizik.uz/api/hydrogen-seismologies"
 USERNAME = "Rasulov Alisher"
 PASSWORD = "rasulovalisher"
 
+
 def get_auth_token():
     try:
         payload = {"username": USERNAME, "password": PASSWORD}
-        response = requests.post(LOGIN_URL, json=payload, timeout=10) # Timeout qo'shildi
+        response = requests.post(LOGIN_URL, json=payload, timeout=10)
         response.raise_for_status()
         return response.json().get("result", {}).get("token")
     except (requests.exceptions.RequestException, json.JSONDecodeError) as e:
         print(f"Login xatosi: {e}")
         return None
 
+
 def fetch_data_from_api(params, token):
     headers = {"Authorization": f"Bearer {token}"}
     all_data = []
-    url = DATA_URL  # boshlang'ich URL
+    url = DATA_URL
     
     try:
         while url:
             response = requests.get(url, params=params, headers=headers, timeout=30)
             response.raise_for_status()
-
             response_data = response.json()
+
             if response_data and response_data.get('result'):
                 data = response_data['result'].get('data', [])
                 all_data.extend(data)
-                # keyingi sahifa URL ni olish
                 url = response_data['result'].get('next_page_url')
-                # birinchi sahifadan keyin params kerak bo‘lmaydi
                 params = {}
             else:
                 break
@@ -154,6 +151,7 @@ def fetch_data_from_api(params, token):
         print(f"API dan ma'lumot olishda xato: {e}")
         return None
 
+
 def save_data_to_db(data_list):
     if not data_list:
         return 0
@@ -161,26 +159,32 @@ def save_data_to_db(data_list):
     rows_to_create = []
     for item in data_list:
         try:
-            # Vaqt mintaqasini hisobga olgan holda formatlash
             formatted_date_naive = datetime.datetime.strptime(item.get('date'), '%d.%m.%Y')
             formatted_date = timezone.make_aware(formatted_date_naive, timezone.get_current_timezone())
         except (ValueError, TypeError):
             formatted_date = None
 
-        db_well_name = item.get('well_code')
-        station_code = item.get('station_code')
-        
-        for station_info in STATIONS_AND_WELLS.values():
-            if station_info['name'] == station_code:
-                for well in station_info['wells']:
-                    if well['api_well'] == db_well_name:
-                        db_well_name = well['db_well']
-                        break
-                break
+        api_station_code = item.get('station_code')
+        api_well_code = item.get('well_code')
 
+        db_station_name = None
+        db_well_name = None
+
+        # 🔑 API -> DB mapping
+        station_info = STATIONS_AND_WELLS.get(api_station_code)
+        if station_info:
+            db_station_name = station_info["name"]
+            for well in station_info["wells"]:
+                if well["api_well"] == api_well_code:
+                    db_well_name = well["db_well"]
+                    break
+
+        if not db_station_name or not db_well_name:
+            continue  
+        
         new_record = HydrogenSeismology(
-            station_code=station_code,
-            well_code=db_well_name,
+            station_code=db_station_name,  
+            well_code=db_well_name,        
             date=formatted_date,
             he=item.get('he'),
             h2=item.get('h2'),
@@ -211,13 +215,14 @@ def save_data_to_db(data_list):
     HydrogenSeismology.objects.bulk_create(rows_to_create)
     return len(rows_to_create)
 
+
 def index(request):
     return render(request, 'download_base_app/index.html', {'stations': STATIONS_AND_WELLS})
+
 
 @csrf_exempt
 def upload(request):
     if request.method == 'GET':
-        # Oddiy forma ko‘rsatish (stansiyalar ro‘yxati bilan)
         return render(request, 'download_base_app/index.html', {'stations': STATIONS_AND_WELLS})
 
     elif request.method == 'POST':
@@ -250,7 +255,7 @@ def upload(request):
                 
                 if well_code == "all_wells":
                     for well in station_info["wells"]:
-                         api_stations_to_fetch.append({"station_code": station_code, "well_code": well["api_well"]})
+                        api_stations_to_fetch.append({"station_code": station_code, "well_code": well["api_well"]})
                 else:
                     api_stations_to_fetch.append({"station_code": station_code, "well_code": well_code})
 
@@ -274,8 +279,8 @@ def upload(request):
             return JsonResponse({"success": True, "message": f"{rows_inserted} ta yozuv bazaga saqlandi."})
         
         except json.JSONDecodeError:
-            return JsonResponse({"success": False, "message": "Noto'g'ri JSON formatida ma'lumot yuborildi. Iltimos, dasturchiga murojaat qiling."}, status=400)
+            return JsonResponse({"success": False, "message": "Noto'g'ri JSON formatida ma'lumot yuborildi."}, status=400)
         except Exception as e:
-            return JsonResponse({"success": False, "message": f"Kutilmagan xatolik yuz berdi: {type(e).__name__}: {str(e)}"}, status=500)
+            return JsonResponse({"success": False, "message": f"Kutilmagan xatolik: {type(e).__name__}: {str(e)}"}, status=500)
             
     return JsonResponse({"success": False, "message": "Noto'g'ri so'rov usuli."}, status=405)
