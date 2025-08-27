@@ -3379,3 +3379,163 @@ django.template.exceptions.TemplateSyntaxError: Invalid filter: 'tojson'
 2025-08-25 10:04:42,236 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
 2025-08-25 10:04:57,459 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
 2025-08-25 10:07:36,936 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 10:33:17,196 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 10:33:24,475 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 10:36:08,209 - WARNING - Method Not Allowed: /upload/upload/
+2025-08-25 10:36:08,246 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 10:36:22,876 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 10:39:34,295 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 10:40:58,799 - ERROR - Internal Server Error: /upload/upload/
+2025-08-25 10:49:59,458 - INFO - /home/asus/PROJECT/Seismo/download_base_app/models.py changed, reloading.
+2025-08-25 10:53:56,494 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 10:56:46,962 - ERROR - Internal Server Error: /upload/upload/
+2025-08-25 10:57:36,658 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 11:01:18,718 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 11:04:25,998 - INFO - Successfully created DB engine.
+2025-08-25 11:04:26,037 - INFO - package: mysql.connector.plugins
+2025-08-25 11:04:26,037 - INFO - plugin_name: caching_sha2_password
+2025-08-25 11:04:26,037 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-25 11:04:26,037 - INFO - package: mysql.connector.plugins
+2025-08-25 11:04:26,037 - INFO - plugin_name: mysql_native_password
+2025-08-25 11:04:26,038 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-25 11:05:04,883 - ERROR - Internal Server Error: /upload/upload/
+2025-08-25 11:11:53,077 - INFO - Successfully created DB engine.
+2025-08-25 11:11:53,123 - INFO - package: mysql.connector.plugins
+2025-08-25 11:11:53,123 - INFO - plugin_name: caching_sha2_password
+2025-08-25 11:11:53,123 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-25 11:11:53,123 - INFO - package: mysql.connector.plugins
+2025-08-25 11:11:53,123 - INFO - plugin_name: mysql_native_password
+2025-08-25 11:11:53,124 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-25 11:12:17,605 - ERROR - Internal Server Error: /upload/upload/
+2025-08-25 11:14:58,346 - INFO - /home/asus/PROJECT/Seismo/download_base_app/admin.py changed, reloading.
+2025-08-25 11:15:36,840 - INFO - /home/asus/PROJECT/Seismo/download_base_app/admin.py changed, reloading.
+2025-08-25 11:15:42,037 - INFO - /home/asus/PROJECT/Seismo/download_base_app/models.py changed, reloading.
+2025-08-25 11:19:06,337 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 11:19:20,596 - ERROR - Internal Server Error: /upload/upload/
+2025-08-25 11:21:40,707 - WARNING - Method Not Allowed: /upload/upload/
+2025-08-25 11:21:40,747 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 11:21:42,004 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 11:21:44,069 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 11:21:44,529 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 11:21:56,446 - ERROR - Internal Server Error: /upload/upload/
+2025-08-25 11:22:15,854 - WARNING - Method Not Allowed: /upload/upload/
+2025-08-25 11:22:15,879 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 11:22:19,220 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 11:22:19,249 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 11:27:13,249 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 11:36:50,101 - INFO - Successfully created DB engine.
+2025-08-25 11:36:50,139 - INFO - package: mysql.connector.plugins
+2025-08-25 11:36:50,139 - INFO - plugin_name: caching_sha2_password
+2025-08-25 11:36:50,140 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-25 11:36:50,140 - INFO - package: mysql.connector.plugins
+2025-08-25 11:36:50,140 - INFO - plugin_name: mysql_native_password
+2025-08-25 11:36:50,140 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-25 11:37:09,643 - ERROR - Internal Server Error: /upload/upload/
+2025-08-25 11:38:48,873 - INFO - Successfully created DB engine.
+2025-08-25 11:38:48,912 - INFO - package: mysql.connector.plugins
+2025-08-25 11:38:48,912 - INFO - plugin_name: caching_sha2_password
+2025-08-25 11:38:48,912 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-25 11:38:48,913 - INFO - package: mysql.connector.plugins
+2025-08-25 11:38:48,913 - INFO - plugin_name: mysql_native_password
+2025-08-25 11:38:48,913 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-25 11:39:08,270 - ERROR - Internal Server Error: /upload/upload/
+2025-08-25 11:42:00,405 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-25 11:42:03,325 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-25 11:42:37,460 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-25 11:42:40,351 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-25 11:43:08,505 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-25 11:44:47,382 - INFO - /home/asus/PROJECT/Seismo/seismo_project/settings.py changed, reloading.
+2025-08-25 16:46:23,477 - ERROR - Internal Server Error: /upload/upload/
+2025-08-25 16:47:31,446 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-25 16:47:38,520 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-25 16:51:19,098 - INFO - /home/asus/PROJECT/Seismo/download_base_app/models.py changed, reloading.
+2025-08-25 16:51:57,465 - INFO - /home/asus/PROJECT/Seismo/download_base_app/models.py changed, reloading.
+2025-08-25 16:52:04,957 - INFO - /home/asus/PROJECT/Seismo/download_base_app/models.py changed, reloading.
+2025-08-25 16:52:19,145 - INFO - /home/asus/PROJECT/Seismo/download_base_app/models.py changed, reloading.
+2025-08-25 16:57:21,302 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 16:57:26,752 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 17:06:25,271 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-25 17:08:51,660 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-25 17:09:00,607 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-27 09:01:04,201 - WARNING - Not Found: /favicon.ico
+2025-08-27 09:01:10,151 - INFO - Successfully created DB engine.
+2025-08-27 09:01:10,202 - INFO - package: mysql.connector.plugins
+2025-08-27 09:01:10,202 - INFO - plugin_name: caching_sha2_password
+2025-08-27 09:01:10,202 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-27 09:01:10,202 - INFO - package: mysql.connector.plugins
+2025-08-27 09:01:10,202 - INFO - plugin_name: mysql_native_password
+2025-08-27 09:01:10,203 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-27 09:09:19,824 - WARNING - Not Found: /.well-known/appspecific/com.chrome.devtools.json
+2025-08-27 09:25:21,687 - INFO - Successfully created DB engine.
+2025-08-27 09:25:21,727 - INFO - package: mysql.connector.plugins
+2025-08-27 09:25:21,727 - INFO - plugin_name: caching_sha2_password
+2025-08-27 09:25:21,727 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-27 09:25:21,727 - INFO - package: mysql.connector.plugins
+2025-08-27 09:25:21,727 - INFO - plugin_name: mysql_native_password
+2025-08-27 09:25:21,727 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-27 09:34:25,425 - ERROR - Internal Server Error: /
+Traceback (most recent call last):
+  File "/home/asus/PROJECT/Seismo/.venv/lib/python3.12/site-packages/django/urls/base.py", line 81, in reverse
+    extra, resolver = resolver.namespace_dict[ns]
+                      ~~~~~~~~~~~~~~~~~~~~~~~^^^^
+KeyError: 'seismos_app'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/asus/PROJECT/Seismo/.venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/asus/PROJECT/Seismo/.venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "/home/asus/PROJECT/Seismo/.venv/lib/python3.12/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/asus/PROJECT/Seismo/.venv/lib/python3.12/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/asus/PROJECT/Seismo/.venv/lib/python3.12/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/asus/PROJECT/Seismo/.venv/lib/python3.12/site-packages/django/template/base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/asus/PROJECT/Seismo/.venv/lib/python3.12/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/asus/PROJECT/Seismo/.venv/lib/python3.12/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/asus/PROJECT/Seismo/.venv/lib/python3.12/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/asus/PROJECT/Seismo/.venv/lib/python3.12/site-packages/django/template/defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/asus/PROJECT/Seismo/.venv/lib/python3.12/site-packages/django/urls/base.py", line 92, in reverse
+    raise NoReverseMatch("%s is not a registered namespace" % key)
+django.urls.exceptions.NoReverseMatch: 'seismos_app' is not a registered namespace
+2025-08-27 09:35:20,106 - WARNING - Method Not Allowed: /upload/upload/
+2025-08-27 09:36:09,381 - INFO - /home/asus/PROJECT/Seismo/download_base_app/urls.py changed, reloading.
+2025-08-27 09:36:11,472 - INFO - /home/asus/PROJECT/Seismo/download_base_app/urls.py changed, reloading.
+2025-08-27 09:36:19,310 - WARNING - Not Found: /upload/upload/
+2025-08-27 09:36:27,768 - INFO - /home/asus/PROJECT/Seismo/download_base_app/urls.py changed, reloading.
+2025-08-27 09:36:29,719 - WARNING - Method Not Allowed: /upload/upload/
+2025-08-27 09:36:33,646 - WARNING - Method Not Allowed: /upload/upload/
+2025-08-27 09:39:22,766 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 09:39:24,811 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 09:39:26,919 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 09:39:28,907 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 09:39:36,032 - INFO - /home/asus/PROJECT/Seismo/download_base_app/views.py changed, reloading.
+2025-08-27 09:40:04,700 - INFO - Successfully created DB engine.
+2025-08-27 09:40:04,739 - INFO - package: mysql.connector.plugins
+2025-08-27 09:40:04,740 - INFO - plugin_name: caching_sha2_password
+2025-08-27 09:40:04,740 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLCachingSHA2PasswordAuthPlugin
+2025-08-27 09:40:04,740 - INFO - package: mysql.connector.plugins
+2025-08-27 09:40:04,740 - INFO - plugin_name: mysql_native_password
+2025-08-27 09:40:04,740 - INFO - AUTHENTICATION_PLUGIN_CLASS: MySQLNativePasswordAuthPlugin
+2025-08-27 09:40:27,282 - INFO - Successfully created DB engine.
+2025-08-27 09:40:37,758 - INFO - Hisoblangan radius(R): 100.0 km
+2025-08-27 09:40:39,289 - INFO - Successfully created DB engine.
+2025-08-27 09:40:39,362 - INFO - Successfully created DB engine.

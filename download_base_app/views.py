@@ -6,6 +6,8 @@ import time
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+
 
 from .models import HydrogenSeismology
 
@@ -23,7 +25,7 @@ STATIONS_AND_WELLS = {
             {"api_well": "Yangi yo'l", "db_well": "Yangi yo'l"}
         ]
     },
-    "Chortoq": {
+    "CHRT": {
         "name": "Chortoq",
         "wells": [
             {"api_well": "Chortoq 2", "db_well": "Chortoq 2"},
@@ -48,7 +50,7 @@ STATIONS_AND_WELLS = {
             {"api_well": "Ming bulog'", "db_well": "Ming bulog'"}
         ]
     },
-    "Jumabozor": {
+    "JMB": {
         "name": "Jumabozor",
         "wells": [
             {"api_well": "Jumabozo'r 1", "db_well": "Jumabozor 1"},
@@ -57,19 +59,19 @@ STATIONS_AND_WELLS = {
             {"api_well": "Ibn Sino", "db_well": "Ibn Sino"}
         ]
     },
-    "Jongeldi": {
+    "DJAN": {
         "name": "Jongeldi",
         "wells": [
-            {"api_well": "Tuyaqochar", "db_well": "Tuyaqochar"},
-            {"api_well": "Meteostansiya", "db_well": "Meteostansiya"},
+            {"api_well": "Tuyaq-R", "db_well": "Tuyaqochar"},
+            {"api_well": "meteo-ya", "db_well": "Meteostansiya"},
             {"api_well": "Gumbaz", "db_well": "Gumbaz"}
         ]
     },
     "Ozodboshi": {
         "name": "Ozodboshi",
         "wells": [
-            {"api_well": "O'zdobshi", "db_well": "Minora"},
-            {"api_well": "Chirqo'q", "db_well": "GAI"},
+            {"api_well": "Minora", "db_well": "Minora"},
+            {"api_well": "GAI", "db_well": "GAI"},
             
             {"api_well": "Chotqol", "db_well": "Chotqol"},
             {"api_well": "Ozodbosh bulog'i", "db_well": "Ozodbosh bulog'i"}
@@ -89,25 +91,24 @@ STATIONS_AND_WELLS = {
     "XRB": {
         "name": "Xarabek",
         "wells": [
-            {"api_well": "Xarabek", "db_well": "Xarabek"},
-            {"api_well": "Bobur bulo'q", "db_well": "Bobur bulo'q"}
+            {"api_well": "Xaрабек", "db_well": "Xarabek"},
+            {"api_well": "Bobur bulog'i", "db_well": "Bobur bulog'i"}
         ]
     },
-    "Yangi Buxoro": {
+    "Buxoro": {
         "name": "Yangi Buxoro",
         "wells": [
             {"api_well": "Buxoro", "db_well": "Buxoro"},
-            {"api_well": "Jo'yar", "db_well": "Jo'yzar"},
-            {"api_well": "Setora mixosa", "db_well": "Setorai moxixosa"},
-            {"api_well": "Xarby bo'lim", "db_well": "Xarbiy bo'lim"},
+            {"api_well": "Jo'yzar", "db_well": "Jo'yzar"},
+            {"api_well": "Setorai moxixosa", "db_well": "Setorai moxixosa"},
+            {"api_well": "Xarbiy bo'lim", "db_well": "Xarbiy bo'lim"},
             {"api_well": "Yangi obod", "db_well": "Yangi obod"}
         ]
     },
     "Guliston": {
         "name": "Guliston",
         "wells": [
-            {"api_well": "GAL", "db_well": "Guliston"},
-            {"api_well": "Minor", "db_well": "Minor"}
+            {"api_well": "Guliston", "db_well": "Guliston"}
         ]
     },
 }
@@ -131,21 +132,21 @@ def get_auth_token():
 def fetch_data_from_api(params, token):
     headers = {"Authorization": f"Bearer {token}"}
     all_data = []
-    page = 1
+    url = DATA_URL  # boshlang'ich URL
     
     try:
-        while True:
-            params['page'] = page
-            response = requests.get(DATA_URL, params=params, headers=headers, timeout=30) # Timeout qo'shildi
+        while url:
+            response = requests.get(url, params=params, headers=headers, timeout=30)
             response.raise_for_status()
 
             response_data = response.json()
             if response_data and response_data.get('result'):
                 data = response_data['result'].get('data', [])
                 all_data.extend(data)
-                if not response_data['result'].get('next_page_url'):
-                    break
-                page += 1
+                # keyingi sahifa URL ni olish
+                url = response_data['result'].get('next_page_url')
+                # birinchi sahifadan keyin params kerak bo‘lmaydi
+                params = {}
             else:
                 break
         return all_data
@@ -160,7 +161,9 @@ def save_data_to_db(data_list):
     rows_to_create = []
     for item in data_list:
         try:
-            formatted_date = datetime.datetime.strptime(item.get('date'), '%d.%m.%Y').strftime('%Y-%m-%d %H:%M:%S')
+            # Vaqt mintaqasini hisobga olgan holda formatlash
+            formatted_date_naive = datetime.datetime.strptime(item.get('date'), '%d.%m.%Y')
+            formatted_date = timezone.make_aware(formatted_date_naive, timezone.get_current_timezone())
         except (ValueError, TypeError):
             formatted_date = None
 
@@ -213,7 +216,11 @@ def index(request):
 
 @csrf_exempt
 def upload(request):
-    if request.method == 'POST':
+    if request.method == 'GET':
+        # Oddiy forma ko‘rsatish (stansiyalar ro‘yxati bilan)
+        return render(request, 'download_base_app/index.html', {'stations': STATIONS_AND_WELLS})
+
+    elif request.method == 'POST':
         try:
             data = json.loads(request.body)
             

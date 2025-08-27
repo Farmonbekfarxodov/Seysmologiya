@@ -1,4 +1,4 @@
-# data_importer/models.py
+
 
 from django.db import models
 
@@ -12,14 +12,13 @@ class Station(models.Model):
 class Well(models.Model):
     station = models.ForeignKey(Station, on_delete=models.CASCADE, related_name='wells')
     api_name = models.CharField(max_length=255, help_text="API'dagi quduq nomi (masalan, 'Jumabozo'r 1')")
-    db_name = models.CharField(max_length=255, help_text="Bazada saqlanadigan quduq nomi (masalan, 'Jumabozor 1')")
+    db_name = models.CharField(max_length=255, help_text="Bazad a saqlanadigan quduq nomi (masalan, 'Jumabozor 1')")
 
     def __str__(self):
         return f"{self.station.db_name} - {self.db_name}"
 
 class HydrogenSeismology(models.Model):
-    # Oldingi model o'zgarishsiz qoladi
-    # ...
+    station_code = models.CharField(max_length=255, null=True, blank=True)
     well_code = models.CharField(max_length=255)
     date = models.DateTimeField(null=True, blank=True)
     he = models.FloatField(null=True, blank=True)
@@ -45,6 +44,10 @@ class HydrogenSeismology(models.Model):
     p = models.FloatField(null=True, blank=True)
     eocc = models.FloatField(null=True, blank=True)
     nep_t0 = models.FloatField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'hydrogen_seismologies'
+        managed = False
 
     def __str__(self):
         return f"{self.station_code} - {self.well_code} ({self.date})"

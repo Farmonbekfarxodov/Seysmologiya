@@ -1,240 +1,51 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Seismo.uz — Seysmika Monitoring</title>
-  <meta name="description" content="Seismik tahlil va monitoring bosh sahifasi — real vaqtda yer silkinishlari, grafiklar va xarita." />
-  <!-- Tailwind CDN for quick styling (replace with built CSS in production) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Plotly for charts -->
-  <script src="https://cdn.plot.ly/plotly-2.20.0.min.js"></script>
-  <!-- Leaflet for map (interactive earthquake markers) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <style>
-    /* small helpers */
-    .card { @apply bg-white shadow-md rounded-2xl p-4; }
-    .glass { background: rgba(255,255,255,0.6); backdrop-filter: blur(6px); }
-    #map { height: 420px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seismo.uz - Seysmika monitoring boshqaruv paneli</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="bg-slate-50 text-slate-800">
-  <!-- NAVBAR -->
-  <header class="bg-white shadow-sm sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center h-16">
-        <div class="flex items-center gap-4">
-          <a href="#" class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center text-white font-bold">S</div>
-            <div>
-              <h1 class="text-lg font-semibold">Seismo.uz</h1>
-              <p class="text-xs text-slate-500">Seysmika tahlil va monitoring</p>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="#">Seismo.uz</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="#">Umumiy</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Xarita</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Grafiklar</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">So‘nggi voqealar</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Haqida</a></li>
+                </ul>
+
+                <!-- Yangi buttonlar -->
+                <div class="d-flex">
+                    <a href="{% url 'download_base:upload' %}" class="btn btn-outline-success me-2">Bazaga yuklash</a>
+                    <a href="{% url 'seismos:selection' %}" class="btn btn-outline-info me-3">Seysmik tahlil</a>
+                    <a href="/login" class="btn btn-outline-dark me-2">Kirish</a>
+                    <a href="/register" class="btn btn-primary">Ro‘yxatdan o‘tish</a>
+                </div>
             </div>
-          </a>
         </div>
+    </nav>
 
-        <nav class="hidden md:flex items-center gap-6 text-sm text-slate-600">
-          <a href="#overview" class="hover:text-slate-900">Umumiy</a>
-          <a href="#map-section" class="hover:text-slate-900">Xarita</a>
-          <a href="#charts" class="hover:text-slate-900">Grafiklar</a>
-          <a href="#events" class="hover:text-slate-900">So'nggi voqealar</a>
-          <a href="#about" class="hover:text-slate-900">Haqida</a>
-        </nav>
-
-        <div class="flex items-center gap-3">
-          <button class="text-sm px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100">Kirish</button>
-          <button class="text-sm px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:opacity-95">Ro'yxatdan o'tish</button>
+    <!-- Mavzuga oid rasm -->
+    <section class="text-center bg-light py-5">
+        <div class="container">
+            <h1 class="fw-bold mb-4">Seysmika monitoring boshqaruv paneli</h1>
+            
+            <p class="mt-3 text-muted">Seysmik tahlil va monitoring tizimi orqali zilzilalarni kuzatish va tahlil qilish mumkin.</p>
         </div>
-      </div>
-    </div>
-  </header>
-
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- HERO / QUICK STATS -->
-    <section id="overview" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-      <div class="lg:col-span-2 card glass p-6">
-        <h2 class="text-2xl font-semibold mb-2">Seysmika monitoring boshqaruv paneli</h2>
-        <p class="text-sm text-slate-600 mb-4">Real-vaqt ma'lumotlari, anomaliya aniqlash va quduq/merkez bo'yicha statistikalar.</p>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="p-4 rounded-xl border border-slate-100">
-            <div class="text-xs text-slate-500">So'nggi 24 soatda</div>
-            <div class="mt-2 text-2xl font-bold" id="stat-24h">—</div>
-            <div class="text-xs text-slate-400">sodir bo'lgan zilzilalar</div>
-          </div>
-
-          <div class="p-4 rounded-xl border border-slate-100">
-            <div class="text-xs text-slate-500">Eng katta magnituda</div>
-            <div class="mt-2 text-2xl font-bold" id="stat-max-mag">—</div>
-            <div class="text-xs text-slate-400">Ml yoki Mb</div>
-          </div>
-
-          <div class="p-4 rounded-xl border border-slate-100">
-            <div class="text-xs text-slate-500">Monitoring punktlari</div>
-            <div class="mt-2 text-2xl font-bold" id="stat-stations">—</div>
-            <div class="text-xs text-slate-400">aktiv / jami</div>
-          </div>
-        </div>
-      </div>
-
-      <aside class="card p-6">
-        <h3 class="text-lg font-medium mb-3">Filtrlar</h3>
-        <form id="filter-form" class="space-y-3 text-sm">
-          <div>
-            <label class="block text-xs text-slate-600">Davr (kun)</label>
-            <input type="number" id="days" value="7" min="1" class="mt-1 w-full rounded-md border px-3 py-2" />
-          </div>
-          <div>
-            <label class="block text-xs text-slate-600">Minimal magnituda</label>
-            <input type="number" id="min-mag" step="0.1" value="2.5" class="mt-1 w-full rounded-md border px-3 py-2" />
-          </div>
-          <div>
-            <label class="block text-xs text-slate-600">Hudud</label>
-            <select id="region" class="mt-1 w-full rounded-md border px-3 py-2">
-              <option value="all">Barchasi</option>
-              <option value="north">Shimol</option>
-              <option value="center">Markaz</option>
-              <option value="south">Janub</option>
-            </select>
-          </div>
-          <div class="pt-2">
-            <button type="button" id="apply-filters" class="w-full rounded-lg py-2 bg-indigo-600 text-white">Qo'llash</button>
-          </div>
-        </form>
-      </aside>
     </section>
 
-    <!-- MAP + CHARTS -->
-    <section id="map-section" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-      <div class="lg:col-span-2 card p-4">
-        <h3 class="text-lg font-medium mb-2">Interaktiv xarita</h3>
-        <div id="map" class="rounded-md overflow-hidden"></div>
-        <p class="text-xs text-slate-500 mt-2">Marker ustiga bosilganda voqea haqida to'liq ma'lumot paydo bo'ladi.</p>
-      </div>
-
-      <div class="card p-4">
-        <h3 class="text-lg font-medium mb-2">Tez grafiklar</h3>
-        <div id="chart-small" style="height:260px;"></div>
-        <div class="mt-3 text-xs text-slate-500">Trend: so'nggi 7 kun</div>
-      </div>
-    </section>
-
-    <!-- LARGE CHARTS -->
-    <section id="charts" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      <div class="card p-4">
-        <h3 class="text-lg font-medium mb-2">Magnituda tarqalishi</h3>
-        <div id="magnitude-chart" style="height:420px;"></div>
-      </div>
-
-      <div class="card p-4">
-        <h3 class="text-lg font-medium mb-2">Vaqt bo'yicha voqealar (soatlar)</h3>
-        <div id="time-chart" style="height:420px;"></div>
-      </div>
-    </section>
-
-    <!-- RECENT EVENTS TABLE -->
-    <section id="events" class="card p-4 mb-8">
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-medium">So'nggi voqealar</h3>
-        <a href="#" class="text-sm text-indigo-600">Barchasini ko'rish</a>
-      </div>
-
-      <div class="overflow-x-auto mt-4">
-        <table class="min-w-full text-sm text-left">
-          <thead class="text-xs text-slate-500 uppercase">
-            <tr>
-              <th class="px-3 py-2">Sana</th>
-              <th class="px-3 py-2">Vaqt</th>
-              <th class="px-3 py-2">Magnituda</th>
-              <th class="px-3 py-2">Lat, Lon</th>
-              <th class="px-3 py-2">Masofa (km)</th>
-            </tr>
-          </thead>
-          <tbody id="events-tbody" class="divide-y">
-            <!-- JS will populate -->
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- ABOUT / FOOTER -->
-    <section id="about" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-      <div class="lg:col-span-2 card p-6">
-        <h3 class="text-lg font-medium mb-2">Loyihaning maqsadi</h3>
-        <p class="text-sm text-slate-600">Seismo.uz — ilmiy va amaliy seysmika monitoring platformasi. Maqsad: real vaqtda ma'lumotlarni vizualizatsiya qilish, anomaliyalarni aniqlash va operativ xabar berish.</p>
-      </div>
-
-      <div class="card p-6">
-        <h4 class="text-sm font-semibold mb-2">Kontakt</h4>
-        <p class="text-sm text-slate-600">email: info@seismo.uz</p>
-        <p class="text-sm text-slate-600">telefon: +998 90 000 0000</p>
-      </div>
-    </section>
-
-  </main>
-
-  <footer class="border-t py-6">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-sm text-slate-500">© Seismo.uz — Barcha huquqlar himoyalangan.</div>
-  </footer>
-
-  <!-- SCRIPT: demo data + map + charts (replace with real API calls) -->
-  <script>
-    // Demo: o'zgartiring — real API endpointlar bilan almashtiring
-    const DEMO_EVENTS = [
-      {date: '2025-08-12', time: '09:04', mag: 3.6, lat: 40.2, lon: 69.5, dist_km: 12},
-      {date: '2025-08-12', time: '06:18', mag: 2.9, lat: 39.8, lon: 68.9, dist_km: 35},
-      {date: '2025-08-11', time: '22:50', mag: 4.1, lat: 40.7, lon: 70.1, dist_km: 78}
-    ];
-
-    // Populate quick stats
-    document.getElementById('stat-24h').textContent = DEMO_EVENTS.length;
-    document.getElementById('stat-max-mag').textContent = Math.max(...DEMO_EVENTS.map(e=>e.mag));
-    document.getElementById('stat-stations').textContent = '12 / 18';
-
-    // Populate events table
-    const tbody = document.getElementById('events-tbody');
-    DEMO_EVENTS.forEach(ev => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="px-3 py-2">${ev.date}</td>
-        <td class="px-3 py-2">${ev.time}</td>
-        <td class="px-3 py-2 font-medium">${ev.mag}</td>
-        <td class="px-3 py-2">${ev.lat.toFixed(2)}, ${ev.lon.toFixed(2)}</td>
-        <td class="px-3 py-2">${ev.dist_km}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    // Init Leaflet map
-    const map = L.map('map').setView([40.0, 69.0], 6);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    DEMO_EVENTS.forEach(ev => {
-      const marker = L.circleMarker([ev.lat, ev.lon], {radius: Math.max(4, ev.mag * 2), color: '#d946ef'}).addTo(map);
-      marker.bindPopup(`<strong>Mag: ${ev.mag}</strong><br>${ev.date} ${ev.time}<br>Lat ${ev.lat}, Lon ${ev.lon}`);
-    });
-
-    // Small sparkline-like chart
-    Plotly.newPlot('chart-small', [{ x: DEMO_EVENTS.map(e=>e.date), y: DEMO_EVENTS.map(e=>e.mag), type: 'scatter', mode: 'lines+markers' }], {margin:{t:10,b:30,l:30,r:10}, xaxis:{visible:true}});
-
-    // Magnitude histogram
-    Plotly.newPlot('magnitude-chart', [{ x: DEMO_EVENTS.map(e=>e.mag), type: 'histogram' }], {margin:{t:10}});
-
-    // Time series
-    Plotly.newPlot('time-chart', [{ x: DEMO_EVENTS.map(e=>e.date+' '+e.time), y: DEMO_EVENTS.map(e=>e.mag), type: 'scatter', mode: 'lines+markers' }], {margin:{t:10}});
-
-    // Filter button (demo): in real app call backend with params
-    document.getElementById('apply-filters').addEventListener('click', ()=>{
-      const days = Number(document.getElementById('days').value);
-      const minMag = Number(document.getElementById('min-mag').value);
-      const region = document.getElementById('region').value;
-      alert(`Filter: ${days} kun, min mag ${minMag}, hudud ${region} (demo)`);
-      // TODO: fetch(`/api/events?days=${days}&min_mag=${minMag}&region=${region}`)
-    });
-  </script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
