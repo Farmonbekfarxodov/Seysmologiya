@@ -27,9 +27,9 @@
             </select>
             <label for="wellSelect">Quduqni tanlang:</label>
             <select id="wellSelect" name="well" disabled></select>
-            <label for="start_date">Boshlang‘ich sana (YYYY-MM-DD):</label>
+            <label for="start_date">Boshlang‘ich sana:</label>
             <input type="date" id="start_date" name="start_date" required min="2020-01-01" max="2030-12-31" data-quillbot-exclude="true" data-gramm="false">
-            <label for="end_date">Yakuniy sana (YYYY-MM-DD):</label>
+            <label for="end_date">Yakuniy sana:</label>
             <input type="date" id="end_date" name="end_date" required min="2020-01-01" max="2030-12-31" data-quillbot-exclude="true" data-gramm="false">
             <button type="submit">Yuklash</button>
         </form>
@@ -151,30 +151,33 @@
         const formData = new FormData(dataForm);
         const csrfToken = formData.get('csrfmiddlewaretoken');
 
+        // Sanalarni DD-MM-YYYY formatiga o'tkazish
+        const startDateFormatted = `${String(startDate.getDate()).padStart(2, '0')}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${startDate.getFullYear()}`;
+        const endDateFormatted = `${String(endDate.getDate()).padStart(2, '0')}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${endDate.getFullYear()}`;
+
         // Ma'lumotlarni JSON formatiga o'tkazish
         const requestData = {
             station: formData.get('station'),
             well: formData.get('well'),
-            start_date: formData.get('start_date'),
-            end_date: formData.get('end_date'),
+            start_date: startDateFormatted, // Formatlangsan sana
+            end_date: endDateFormatted,     // Formatlangsan sana
         };
 
-        console.log('Form data:', requestData);
+        console.log('Formatted data:', requestData);
         
         try {
-            console.log('Sending request to:', '/upload/');
+            console.log('Sending request to:', '/upload/upload/');
             const response = await fetch('/upload/upload/', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json', // Bu eng muhim o'zgarish
+                    'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken,
                 },
-                body: JSON.stringify(requestData) // Ma'lumotlarni JSON satriga aylantirish
+                body: JSON.stringify(requestData)
             });
             console.log('Response status:', response.status);
 
             if (!response.ok) {
-                // HTTP xatolarini ushlash
                 const responseText = await response.text();
                 console.log('Server javobi:', responseText);
                 throw new Error(`HTTP xatosi! Status: ${response.status}, Server javobi: ${responseText}`);

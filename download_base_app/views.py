@@ -170,7 +170,7 @@ def save_data_to_db(data_list):
         db_station_name = None
         db_well_name = None
 
-        # 🔑 API -> DB mapping
+        
         station_info = STATIONS_AND_WELLS.get(api_station_code)
         if station_info:
             db_station_name = station_info["name"]

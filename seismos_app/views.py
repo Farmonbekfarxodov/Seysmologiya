@@ -130,6 +130,29 @@ def fetch_data():
             engine.dispose()
 
 
+def get_all_wells_coordinates():
+    """
+    Barcha skvajinalarning koordinatalarini olish uchun alohida funksiya
+    """
+    engine = None
+    try:
+        engine = connect_db()
+        coords_query = "SELECT naim, Latitude, Longitude FROM skvajina"
+        coords_df = pd.read_sql(coords_query, engine)
+        all_wells = {}
+        for _, row in coords_df.iterrows():
+            well_name = row["naim"].strip()
+            if row["Latitude"] is not None and row["Longitude"] is not None:
+                all_wells[well_name] = (row["Latitude"], row["Longitude"])
+        return all_wells
+    except Exception as e:
+        logging.error(f"Error fetching all wells coordinates: {e}")
+        return {}
+    finally:
+        if engine:
+            engine.dispose()
+
+
 # --- Utility Functions ---
 def destenc_vectorized(lat1, lon1, lat2_series, lon2_series):
     """
@@ -596,13 +619,155 @@ def draw_magnitude_values(fig, result_df, row_index, col_index=1):
     return [min_mag_for_y_axis, max_mag_for_y_axis]
 
 
+def create_radius_circle(center_lat, center_lon, radius_km, well_name):
+    """
+    Berilgan markaz va radiusda aylanada nuqtalarni yaratadi
+    """
+    lats, lons, hover_texts = [], [], []
+    for i in range(0, 361, 5):  # Har 5 gradusda nuqta
+        angle = i * pi / 180
+        lat_offset = (radius_km / 111.32) * cos(angle)
+        lon_offset = (radius_km / 111.32) * sin(angle) / cos(center_lat * pi / 180)
+        
+        lats.append(center_lat + lat_offset)
+        lons.append(center_lon + lon_offset)
+        hover_texts.append(f"Skvajina: {well_name}<br>Radius: {radius_km:.2f} km")
+    
+    return lats, lons, hover_texts
+
+
+def add_map_data(fig, selected_keys, well_coords, calculated_R_km, map_row):
+    """
+    Xaritaga barcha skvajinalar va tanlangan skvajinalar uchun radiuslarni qo'shadi
+    """
+    # Barcha skvajinalarni olish
+    all_wells = get_all_wells_coordinates()
+    
+    # Tanlangan skvajinalar nomlarini ajratib olish
+    selected_well_names = set()
+    for key in selected_keys:
+        _, skvajina = key.split(" | ")
+        selected_well_names.add(skvajina)
+    
+    # Barcha skvajinalarni xaritaga qo'shish (kulrang rangda)
+    all_well_lats = []
+    all_well_lons = []
+    all_well_names = []
+    
+    for well_name, (lat, lon) in all_wells.items():
+        if well_name not in selected_well_names:  # Faqat tanlangan bo'lmaganlarni
+            all_well_lats.append(lat)
+            all_well_lons.append(lon)
+            all_well_names.append(well_name)
+    
+    if all_well_lats:
+        fig.add_trace(
+            go.Scattermapbox(
+                lat=all_well_lats,
+                lon=all_well_lons,
+                mode="markers+text",
+                marker=go.scattermapbox.Marker(
+                    size=10, 
+                    color="gray", 
+                    symbol="marker"
+                ),
+                text=all_well_names,
+                textposition="bottom right",
+                textfont=dict(size=8, color="gray"),
+                hoverinfo="text",
+                hovertemplate="Skvajina: %{text}<br>(Tanlanmagan)",
+                name="Boshqa skvajinalar",
+                showlegend=True,
+                opacity=0.7,
+            ),
+            row=map_row,
+            col=1,
+        )
+    
+    # Tanlangan skvajinalarni xaritaga qo'shish (qizil rangda, kattaroq)
+    selected_well_data = []
+    for key in selected_keys:
+        _, skvajina = key.split(" | ")
+        lat, lon = well_coords.get(skvajina, (None, None))
+        if lat is not None and lon is not None:
+            selected_well_data.append({"lat": lat, "lon": lon, "name": skvajina})
+    
+    if selected_well_data:
+        selected_df = pd.DataFrame(selected_well_data)
+        
+        # Tanlangan skvajina nuqtalari
+        fig.add_trace(
+            go.Scattermapbox(
+                lat=selected_df["lat"],
+                lon=selected_df["lon"],
+                mode="markers+text",
+                marker=go.scattermapbox.Marker(
+                    size=16, 
+                    color="red", 
+                    symbol="marker"
+                ),
+                text=selected_df["name"],
+                textposition="bottom right",
+                textfont=dict(size=10, color="red", family="Arial Black"),
+                hoverinfo="text",
+                hovertemplate="Tanlangan skvajina: %{text}",
+                name="Tanlangan skvajinalar",
+                showlegend=True,
+            ),
+            row=map_row,
+            col=1,
+        )
+        
+        # Radiuslarni chizish (faqat tanlangan skvajinalar uchun)
+        if calculated_R_km is not None:
+            radius_colors = ["blue", "green", "orange", "purple", "brown", "pink"]
+            for idx, row_data in selected_df.iterrows():
+                color = radius_colors[idx % len(radius_colors)]
+                
+                lats, lons, hover_texts = create_radius_circle(
+                    row_data["lat"], 
+                    row_data["lon"], 
+                    calculated_R_km, 
+                    row_data["name"]
+                )
+                
+                fig.add_trace(
+                    go.Scattermapbox(
+                        lat=lats,
+                        lon=lons,
+                        mode="lines",
+                        line=go.scattermapbox.Line(color=color, width=2),
+                        hoverinfo="text",
+                        text=hover_texts,
+                        name=f"Ta'sir radiusi ({row_data['name']})",
+                        opacity=0.6,
+                        showlegend=True,
+                    ),
+                    row=map_row,
+                    col=1,
+                )
+        
+        # Xarita markazini tanlangan skvajinalar bo'yicha o'rnatish
+        center_lat = selected_df["lat"].mean()
+        center_lon = selected_df["lon"].mean()
+    else:
+        # Agar tanlangan skvajina yo'q bo'lsa, barcha skvajinalar bo'yicha markazlash
+        if all_wells:
+            all_lats = [coord[0] for coord in all_wells.values()]
+            all_lons = [coord[1] for coord in all_wells.values()]
+            center_lat = np.mean(all_lats)
+            center_lon = np.mean(all_lons)
+        else:
+            center_lat, center_lon = 41.2995, 69.2401  # Default O'zbekiston markazi
+    
+    return center_lat, center_lon
+
+
 # --- Views ---
 def selection_view(request):
     """
     Handles the selection of wells and parametrs for analysis.
     """
-
-
     lst_stansiya, _ = fetch_data()
     all_params = []
     for group_name, params_list in DEFAULT_ELEMENTS_GROUPS.items():
@@ -673,14 +838,14 @@ def parametrs_view(request):
             return render(
                 request,
                 "seismos_app/parametrs.html",
-                {"error": "Iltimos, barcha sonli maydonlarga to‘g‘ri qiymat kiriting."},
+                {"error": "Iltimos, barcha sonli maydonlarga to'g'ri qiymat kiriting."},
             )
         except Exception as e:
             logging.error(f"Parameter input or file upload error: {e}")
             return render(
                 request,
                 "seismos_app/parametrs.html",
-                {"error": f"Xato yuz berdi: {e}. Iltimos, qayta urinib ko‘ring."},
+                {"error": f"Xato yuz berdi: {e}. Iltimos, qayta urinib ko'ring."},
             )
     return render(request, "seismos_app/parametrs.html")
 
@@ -688,7 +853,7 @@ def parametrs_view(request):
 def results_view(request):
     """
     Generates and displays seismic analysis results with graphs, and a separate map
-    at the bottom of the page.
+    at the bottom of the page showing all wells and selected wells with radii.
     """
     selected_keys = request.session.get("selected_keys", [])
     selected_params = request.session.get("selected_params", [])
@@ -710,7 +875,7 @@ def results_view(request):
             request,
             "seismos_app/results.html",
             {
-                "error": "To‘liq maʼlumotlar mavjud emas. Iltimos, oldingi qadamlarga qayting."
+                "error": "To'liq maʼlumotlar mavjud emas. Iltimos, oldingi qadamlarga qayting."
             },
         )
 
@@ -727,6 +892,9 @@ def results_view(request):
     if not selected_params:
         selected_params = sorted(list(set(sum(DEFAULT_ELEMENTS_GROUPS.values(), []))))
 
+    engine = None
+    conn = None
+    
     try:
         file_path = os.path.join(settings.MEDIA_ROOT, excel_file)
         if not os.path.exists(file_path):
@@ -749,7 +917,7 @@ def results_view(request):
                 request,
                 "seismos_app/results.html",
                 {
-                    "error": f"Excel faylida kerakli ustunlar yo‘q: {', '.join(missing)}."
+                    "error": f"Excel faylida kerakli ustunlar yo'q: {', '.join(missing)}."
                 },
             )
 
@@ -793,7 +961,7 @@ def results_view(request):
         subplot_titles = [
             f"{key} - {param}" for (_, _, _, _, param, key, _) in graph_data
         ]
-        subplot_titles.append("Skvajinalar joylashgan xarita")
+        subplot_titles.append("Barcha skvajinalar xaritasi")
 
         # Balandliklarni hisoblash - aniq o'lchamlar belgilash
         single_graph_height = 500  # Har bir grafik uchun aniq balandlik
@@ -880,97 +1048,29 @@ def results_view(request):
 
         # --- Xaritani chizish qismi (eng oxirgi subplotga) ---
         map_row = num_graphs + 1
-
-        map_df = pd.DataFrame(columns=["lat", "lon", "name"])
-        for key in selected_keys:
-            stansiya, skvajina = key.split(" | ")
-            lat, lon = well_coords.get(skvajina, (None, None))
-            if lat is not None and lon is not None:
-                map_df = pd.concat(
-                    [
-                        map_df,
-                        pd.DataFrame([{"lat": lat, "lon": lon, "name": skvajina}]),
-                    ],
-                    ignore_index=True,
-                )
-
-        if not map_df.empty:
-            # Skvajina nuqtalari
-            fig.add_trace(
-                go.Scattermapbox(
-                    lat=map_df["lat"],
-                    lon=map_df["lon"],
-                    mode="markers+text",
-                    marker=go.scattermapbox.Marker(
-                        size=14, color="red", symbol="marker"
-                    ),
-                    text=map_df["name"],
-                    textposition="bottom right",
-                    hoverinfo="text",
-                    hovertemplate="Skvajina: %{text}",
-                    name="Skvajinalar",
-                    showlegend=False,
-                ),
-                row=map_row,
-                col=1,
-            )
-
-            # Radiuslarni chizish
-            if calculated_R_km is not None:
-                for _, row_data in map_df.iterrows():
-                    lats, lons, hover_texts = [], [], []
-                    for i in range(0, 361, 10):
-                        angle = i * pi / 180
-                        lat_offset = (calculated_R_km / 111.32) * cos(angle)
-                        lon_offset = (
-                            (calculated_R_km / 111.32)
-                            * sin(angle)
-                            / cos(row_data["lat"] * pi / 180)
-                        )
-
-                        lats.append(row_data["lat"] + lat_offset)
-                        lons.append(row_data["lon"] + lon_offset)
-                        hover_texts.append(
-                            f"Skvajina: {row_data['name']}<br>Radius: {calculated_R_km:.2f} km"
-                        )
-
-                    fig.add_trace(
-                        go.Scattermapbox(
-                            lat=lats,
-                            lon=lons,
-                            mode="lines",
-                            line=go.scattermapbox.Line(color="blue", width=2),
-                            hoverinfo="text",
-                            text=hover_texts,
-                            name=f"Ta'sir radiusi ({row_data['name']})",
-                            opacity=0.5,
-                        ),
-                        row=map_row,
-                        col=1,
-                    )
+        center_lat, center_lon = add_map_data(
+            fig, selected_keys, well_coords, calculated_R_km, map_row
+        )
 
         # --- Layoutni sozlash ---
-        # Sahifa to'liq kengligini ishlatish
         fig.update_layout(
-            title_text="Tahlil natijalari",
+            title_text="Tahlil natijalari - Barcha va tanlangan skvajinalar",
             height=total_figure_height,
             showlegend=True,
             plot_bgcolor="gainsboro",
             hovermode="x unified",
             mapbox_style="open-street-map",
-            mapbox_center=go.layout.mapbox.Center(
-                lat=map_df["lat"].mean() if not map_df.empty else 41.2995,
-                lon=map_df["lon"].mean() if not map_df.empty else 69.2401,
-            ),
-            mapbox_zoom=6,
+            mapbox_center=go.layout.mapbox.Center(lat=center_lat, lon=center_lon),
+            mapbox_zoom=7,
             legend=dict(
                 x=0.01,  # Legend ni grafik ichida chapda joylash
                 y=0.99,
-                bgcolor="rgba(255,255,255,0.8)",
-                bordercolor="rgba(0,0,0,0.2)",
+                bgcolor="rgba(255,255,255,0.9)",
+                bordercolor="rgba(0,0,0,0.3)",
                 borderwidth=1,
                 xanchor="left",
                 yanchor="top",
+                font=dict(size=10),
             ),
             title=dict(font=dict(size=20), x=0.5, xanchor="center"),
             margin=dict(l=20, r=20, t=80, b=20),  # Minimal chetki bo'shliqlar
@@ -994,7 +1094,9 @@ def results_view(request):
         }
         plotly_html = fig.to_html(
             full_html=False, include_plotlyjs="cdn", config=config
-        )  # Natijani template'ga yuboramiz
+        )
+        
+        # Natijani template'ga yuboramiz
         return render(request, "seismos_app/results.html", {"plotly_graph": plotly_html})
 
     except Exception as e:
@@ -1002,7 +1104,7 @@ def results_view(request):
         return render(request, "seismos_app/results.html", {"error": f"Xatolik: {e}"})
 
     finally:
-        if "conn" in locals():
+        if conn:
             conn.close()
-        if "engine" in locals():
+        if engine:
             engine.dispose()
