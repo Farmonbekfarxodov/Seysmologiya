@@ -1,19 +1,19 @@
 import os
 import json
 import logging
-from math import pi, sin, cos
-from datetime import timedelta
-
-
 import pandas as pd
 import numpy as np
+import plotly.graph_objects as go
+import matplotlib.pyplot as plt
+import folium
+
+from datetime import timedelta
+from math import pi, sin, cos, atan2, sqrt
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.core.files.storage import FileSystemStorage
 from sqlalchemy import create_engine, text, exc
 from plotly.subplots import make_subplots
-import matplotlib.pyplot as plt
-import plotly.graph_objects as go
 
 
 # Setup logging
@@ -531,7 +531,7 @@ def plot_data_with_anomalies(
     return y_all_values
 
 
-def draw_magnitude_values(fig, result_df, row_index, col_index=1):
+def draw_magnitude_values(fig, result_df, row_index, col_index=1, min_mag=4):
     """
     Seysmik Mb magnitudalarni ikkinchi Y-o'qda vertikal zangori chiziqlar orqali chizadi.
     """
@@ -539,7 +539,8 @@ def draw_magnitude_values(fig, result_df, row_index, col_index=1):
         logging.info(f"draw_magnitude_values: result_df is empty for row {row_index}")
         return [0, 1]
 
-    filtered_main_mag = result_df[result_df[MAIN_MAGNITUDE_COLUMN] > 0][
+    # Faqat foydalanuvchi kiritgan min_mag dan katta magnitudalarni ko'rsatish
+    filtered_main_mag = result_df[result_df[MAIN_MAGNITUDE_COLUMN] >= min_mag][
         MAIN_MAGNITUDE_COLUMN
     ]
     max_mag_for_y_axis = (
@@ -555,7 +556,7 @@ def draw_magnitude_values(fig, result_df, row_index, col_index=1):
         col=col_index,
     )
 
-    valid_mb_events = result_df[result_df[MAIN_MAGNITUDE_COLUMN] > 0].copy()
+    valid_mb_events = result_df[result_df[MAIN_MAGNITUDE_COLUMN] >= min_mag].copy()
 
     stem_x = []
     stem_y = []
@@ -619,151 +620,112 @@ def draw_magnitude_values(fig, result_df, row_index, col_index=1):
     return [min_mag_for_y_axis, max_mag_for_y_axis]
 
 
-def create_radius_circle(center_lat, center_lon, radius_km, well_name):
+def distance_haversine(lat1, lon1, lat2, lon2):
     """
-    Berilgan markaz va radiusda aylanada nuqtalarni yaratadi
+    Haversine formulasi yordamida ikki geografik nuqta orasidagi masofani (km) hisoblaydi.
     """
-    lats, lons, hover_texts = [], [], []
-    for i in range(0, 361, 5):  # Har 5 gradusda nuqta
-        angle = i * pi / 180
-        lat_offset = (radius_km / 111.32) * cos(angle)
-        lon_offset = (radius_km / 111.32) * sin(angle) / cos(center_lat * pi / 180)
-        
-        lats.append(center_lat + lat_offset)
-        lons.append(center_lon + lon_offset)
-        hover_texts.append(f"Skvajina: {well_name}<br>Radius: {radius_km:.2f} km")
-    
-    return lats, lons, hover_texts
+    degree_to_rad = pi / 180.0
+    d_lat = (lat2 - lat1) * degree_to_rad
+    d_lon = (lon2 - lon1) * degree_to_rad
+    a = pow(sin(d_lat / 2), 2) + cos(lat1 * degree_to_rad) * cos(
+        lat2 * degree_to_rad
+    ) * pow(sin(d_lon / 2), 2)
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    d = 6371 * c
+    return d
 
 
-def add_map_data(fig, selected_keys, well_coords, calculated_R_km, map_row):
+def add_map_data_folium(selected_keys, well_coords, earthquake_data):
     """
-    Xaritaga barcha skvajinalar va tanlangan skvajinalar uchun radiuslarni qo'shadi
+    Folium yordamida interaktiv xarita yaratadi va unga barcha
+    skvajinalar, tanlangan skvajinalar va zilzilalarni qoʻshadi.
     """
-    # Barcha skvajinalarni olish
     all_wells = get_all_wells_coordinates()
-    
-    # Tanlangan skvajinalar nomlarini ajratib olish
+
     selected_well_names = set()
     for key in selected_keys:
         _, skvajina = key.split(" | ")
         selected_well_names.add(skvajina)
-    
-    # Barcha skvajinalarni xaritaga qo'shish (kulrang rangda)
-    all_well_lats = []
-    all_well_lons = []
-    all_well_names = []
-    
+
+    if selected_keys:
+        selected_lats = [
+            well_coords[key.split(" | ")[1]][0]
+            for key in selected_keys
+            if well_coords.get(key.split(" | ")[1])
+        ]
+        selected_lons = [
+            well_coords[key.split(" | ")[1]][1]
+            for key in selected_keys
+            if well_coords.get(key.split(" | ")[1])
+        ]
+        center_lat = np.mean(selected_lats) if selected_lats else 41.2995
+        center_lon = np.mean(selected_lons) if selected_lons else 69.2401
+    elif all_wells:
+        all_lats = [coord[0] for coord in all_wells.values()]
+        all_lons = [coord[1] for coord in all_wells.values()]
+        center_lat = np.mean(all_lats)
+        center_lon = np.mean(all_lons)
+    else:
+        center_lat, center_lon = 41.2995, 69.2401
+
+    m = folium.Map(
+        location=[center_lat, center_lon],
+        zoom_start=7,
+        tiles="OpenStreetMap",
+        # width='1200px',height='700px'
+    )
+
+    # Barcha skvajinalarni xaritaga qoʻshish (kulrang rangda)
     for well_name, (lat, lon) in all_wells.items():
-        if well_name not in selected_well_names:  # Faqat tanlangan bo'lmaganlarni
-            all_well_lats.append(lat)
-            all_well_lons.append(lon)
-            all_well_names.append(well_name)
-    
-    if all_well_lats:
-        fig.add_trace(
-            go.Scattermapbox(
-                lat=all_well_lats,
-                lon=all_well_lons,
-                mode="markers+text",
-                marker=go.scattermapbox.Marker(
-                    size=10, 
-                    color="gray", 
-                    symbol="marker"
-                ),
-                text=all_well_names,
-                textposition="bottom right",
-                textfont=dict(size=8, color="gray"),
-                hoverinfo="text",
-                hovertemplate="Skvajina: %{text}<br>(Tanlanmagan)",
-                name="Boshqa skvajinalar",
-                showlegend=True,
-                opacity=0.7,
-            ),
-            row=map_row,
-            col=1,
-        )
-    
-    # Tanlangan skvajinalarni xaritaga qo'shish (qizil rangda, kattaroq)
-    selected_well_data = []
+        if well_name not in selected_well_names:
+            tooltip_text = f"<b>Skvajina:</b> {well_name}<br>(Tanlanmagan)"
+            folium.Marker(
+                location=[lat, lon],
+                tooltip=tooltip_text,
+                icon=folium.Icon(color="gray", icon="info-sign"),
+            ).add_to(m)
+
+    # Tanlangan skvajinalarni xaritaga qoʻshish (qizil rangda, kattaroq)
     for key in selected_keys:
         _, skvajina = key.split(" | ")
         lat, lon = well_coords.get(skvajina, (None, None))
         if lat is not None and lon is not None:
-            selected_well_data.append({"lat": lat, "lon": lon, "name": skvajina})
-    
-    if selected_well_data:
-        selected_df = pd.DataFrame(selected_well_data)
-        
-        # Tanlangan skvajina nuqtalari
-        fig.add_trace(
-            go.Scattermapbox(
-                lat=selected_df["lat"],
-                lon=selected_df["lon"],
-                mode="markers+text",
-                marker=go.scattermapbox.Marker(
-                    size=16, 
-                    color="red", 
-                    symbol="marker"
-                ),
-                text=selected_df["name"],
-                textposition="bottom right",
-                textfont=dict(size=10, color="red", family="Arial Black"),
-                hoverinfo="text",
-                hovertemplate="Tanlangan skvajina: %{text}",
-                name="Tanlangan skvajinalar",
-                showlegend=True,
-            ),
-            row=map_row,
-            col=1,
-        )
-        
-        # Radiuslarni chizish (faqat tanlangan skvajinalar uchun)
-        if calculated_R_km is not None:
-            radius_colors = ["blue", "green", "orange", "purple", "brown", "pink"]
-            for idx, row_data in selected_df.iterrows():
-                color = radius_colors[idx % len(radius_colors)]
+            tooltip_text = f"<b>Tanlangan skvajina:</b> {skvajina}"
+            folium.Marker(
+                location=[lat, lon],
+                tooltip=tooltip_text,
+                icon=folium.Icon(color="red", icon="fire"),
+            ).add_to(m)
+
+    # Zilzilalarni xaritaga qoʻshish
+    if earthquake_data is not None and not earthquake_data.empty:
+        for _, row in earthquake_data.iterrows():
+            mag_val = row.get(MAIN_MAGNITUDE_COLUMN, None)
+
+            if mag_val is not None and not np.isnan(mag_val) and mag_val > 0:
+                date_str = str(row.get(DATE_COLUMN, "Noma'lum"))
+                depth_val = row.get("Depth", "Noma'lum")
+
+                tooltip_html = f"""
+                <b>Zilzila</b><br>
+                Sana: {date_str}<br>
+                Chuqurlik (km): {depth_val}<br>
+                Magnituda (Mb): {mag_val:.2f}<br>
                 
-                lats, lons, hover_texts = create_radius_circle(
-                    row_data["lat"], 
-                    row_data["lon"], 
-                    calculated_R_km, 
-                    row_data["name"]
-                )
-                
-                fig.add_trace(
-                    go.Scattermapbox(
-                        lat=lats,
-                        lon=lons,
-                        mode="lines",
-                        line=go.scattermapbox.Line(color=color, width=2),
-                        hoverinfo="text",
-                        text=hover_texts,
-                        name=f"Ta'sir radiusi ({row_data['name']})",
-                        opacity=0.6,
-                        showlegend=True,
-                    ),
-                    row=map_row,
-                    col=1,
-                )
-        
-        # Xarita markazini tanlangan skvajinalar bo'yicha o'rnatish
-        center_lat = selected_df["lat"].mean()
-        center_lon = selected_df["lon"].mean()
-    else:
-        # Agar tanlangan skvajina yo'q bo'lsa, barcha skvajinalar bo'yicha markazlash
-        if all_wells:
-            all_lats = [coord[0] for coord in all_wells.values()]
-            all_lons = [coord[1] for coord in all_wells.values()]
-            center_lat = np.mean(all_lats)
-            center_lon = np.mean(all_lons)
-        else:
-            center_lat, center_lon = 41.2995, 69.2401  # Default O'zbekiston markazi
-    
-    return center_lat, center_lon
+                """
+                folium.CircleMarker(
+                    location=[row[LATITUDE_COLUMN], row[LONGITUDE_COLUMN]],
+                    radius=mag_val * 2.5,
+                    color="darkred",
+                    fill=True,
+                    fill_color="darkred",
+                    fill_opacity=0.8,
+                    tooltip=tooltip_html,
+                ).add_to(m)
+
+    return m._repr_html_()
 
 
-# --- Views ---
 def selection_view(request):
     """
     Handles the selection of wells and parametrs for analysis.
@@ -799,7 +761,9 @@ def selection_view(request):
         return redirect("seismos:parametrs")
 
     return render(
-        request, "seismos_app/selection.html", {"wells": lst_stansiya.keys(), "params": all_params}
+        request,
+        "seismos_app/selection.html",
+        {"wells": lst_stansiya.keys(), "params": all_params},
     )
 
 
@@ -879,27 +843,19 @@ def results_view(request):
             },
         )
 
-    calculated_R_km = None
-    if min_mlgr != 0:
-        try:
-            calculated_R_km = 10 ** (min_mag / min_mlgr)
-            logging.info(f"Hisoblangan radius(R): {calculated_R_km} km")
-        except ValueError:
-            logging.warning("M/lgr qiymati noto'g'ri, R ni hisoblab bo'lmadi.")
-    else:
-        logging.warning("M/lgr ning qiymati nolga teng, R ni hisoblab bo'lmaydi")
-
     if not selected_params:
         selected_params = sorted(list(set(sum(DEFAULT_ELEMENTS_GROUPS.values(), []))))
 
     engine = None
     conn = None
-    
+
     try:
         file_path = os.path.join(settings.MEDIA_ROOT, excel_file)
         if not os.path.exists(file_path):
             return render(
-                request, "seismos_app/results.html", {"error": "Yuklangan Excel fayli topilmadi."}
+                request,
+                "seismos_app/results.html",
+                {"error": "Yuklangan Excel fayli topilmadi."},
             )
 
         dfe = pd.read_excel(file_path)
@@ -924,13 +880,17 @@ def results_view(request):
         lst_stansiya, well_coords = fetch_data()
         if not lst_stansiya or not well_coords:
             return render(
-                request, "seismos_app/results.html", {"error": "Bazadan maʼlumotlar olinmadi."}
+                request,
+                "seismos_app/results.html",
+                {"error": "Bazadan maʼlumotlar olinmadi."},
             )
 
         engine = connect_db()
         conn = engine.connect()
 
         graph_data = []
+        first_anomaly_date = None
+
         for key in selected_keys:
             for param in selected_params:
                 ssdi_id = lst_stansiya.get(key, {}).get(param)
@@ -944,9 +904,27 @@ def results_view(request):
                     continue
                 x_val = pd.to_datetime([row[0] for row in data])
                 y_val = [row[1] for row in data]
+
+                y_series = pd.Series(y_val, index=x_val)  # Pandas Series ga aylantirish
+
                 mean, sigma = np.mean(y_val), np.std(y_val)
                 stansiya, skvajina = key.split(" | ")
                 graph_data.append((x_val, y_val, mean, sigma, param, key, skvajina))
+
+                # Anomaliya sanasini topish
+                upper_bound = mean + btn_value * sigma
+                lower_bound = mean - btn_value * sigma
+
+                anomalies = y_series[
+                    (y_series > upper_bound) | (y_series < lower_bound)
+                ]
+                if not anomalies.empty:
+                    anomaly_start_date = anomalies.index[0]
+                    if (
+                        first_anomaly_date is None
+                        or anomaly_start_date < first_anomaly_date
+                    ):
+                        first_anomaly_date = anomaly_start_date
 
         if not graph_data:
             return render(
@@ -955,59 +933,64 @@ def results_view(request):
                 {"error": "Hech qanday mos keluvchi maʼlumot topilmadi."},
             )
 
-        # --- Grafiklar uchun subplot yaratish ---
+        # Excel fayldagi zilzilalar ma'lumotlarini yuklash va faqat min_mag bo'yicha filtrlash
+        all_earthquakes_df = dfe.copy()
+        all_earthquakes_df["combined_datetime"] = pd.to_datetime(
+            all_earthquakes_df[DATE_COLUMN].astype(str)
+            + " "
+            + all_earthquakes_df[TIME_COLUMN].astype(str),
+            format="%d.%m.%Y %H:%M:%S",
+            errors="coerce",
+        )
+        all_earthquakes_df.dropna(subset=["combined_datetime"], inplace=True)
+
+        # Faqat min_mag dan katta zilzilalarni olish (yiliga yoki anomaliya sanasiga qaramasdan)
+        filtered_earthquakes_df = all_earthquakes_df[
+            all_earthquakes_df[MAIN_MAGNITUDE_COLUMN] >= min_mag
+        ].copy()
+
+        # Anomaliya boshlangandan keyingi zilzilalarni olish
+        recent_earthquakes_df = None
+        if first_anomaly_date is not None:
+            recent_earthquakes_df = all_earthquakes_df[
+                all_earthquakes_df["combined_datetime"] >= first_anomaly_date
+            ].copy()
+
+        # Endi radius bo'yicha emas, faqat anomaliya sanasidan keyingi va min_mag dan katta zilzilalar olinadi
+        if recent_earthquakes_df is not None and not recent_earthquakes_df.empty:
+            filtered_earthquakes_df = recent_earthquakes_df[
+                recent_earthquakes_df[MAIN_MAGNITUDE_COLUMN] >= min_mag
+            ].copy()
+        else:
+            filtered_earthquakes_df = pd.DataFrame()
+
+        # Grafiklar chizish qismi (avvalgidek o'zgarishsiz)
         num_graphs = len(graph_data)
-        num_subplots = num_graphs + 1  # +1 xarita uchun
+        single_graph_height = 500
+        total_figure_height = num_graphs * single_graph_height
+        max_total_height = 20000
+        if total_figure_height > max_total_height:
+            scale_factor = max_total_height / total_figure_height
+            single_graph_height = int(single_graph_height * scale_factor)
+            total_figure_height = max_total_height
+
         subplot_titles = [
             f"{key} - {param}" for (_, _, _, _, param, key, _) in graph_data
         ]
-        subplot_titles.append("Barcha skvajinalar xaritasi")
-
-        # Balandliklarni hisoblash - aniq o'lchamlar belgilash
-        single_graph_height = 500  # Har bir grafik uchun aniq balandlik
-        map_height = 700  # Xarita uchun aniq balandlik
-
-        # Grafik soniga qarab vertical spacing ni dinamik hisoblash
-        if num_graphs <= 3:
-            vertical_spacing = 0.05  # Kam grafiklar uchun katta masofa
-        elif num_graphs <= 5:
-            vertical_spacing = 0.03  # O'rta sonli grafiklar uchun
-        elif num_graphs <= 10:
-            vertical_spacing = 0.01  # Ko'p grafiklar uchun
-        else:
-            vertical_spacing = 0.01  # Juda ko'p grafiklar uchun minimal
-
-        map_height_ratio = map_height / single_graph_height
-        row_heights = [1.0] * num_graphs + [map_height_ratio]
-        total_figure_height = (num_graphs * single_graph_height) + map_height
-
-        # Maksimal balandlikni cheklash (brauzer cheklovlari uchun)
-        max_total_height = 20000  # 20000px maksimal (yuqori limit)
-        if total_figure_height > max_total_height:
-            # Agar juda ko'p grafik bo'lsa, masshtabni sozlash
-            scale_factor = max_total_height / total_figure_height
-            single_graph_height = int(
-                single_graph_height * scale_factor
-            )  # Hozirgi balandlikdan proporsional kichraytirish
-            map_height = int(
-                map_height * scale_factor
-            )  # Hozirgi xarita balandligidan kichraytirish
-            total_figure_height = max_total_height
-            map_height_ratio = map_height / single_graph_height
-            row_heights = [1.0] * num_graphs + [map_height_ratio]
-
-        specs = [[{"secondary_y": True}]] * num_graphs + [[{"type": "mapbox"}]]
+        specs = [[{"secondary_y": True}]] * num_graphs
 
         fig = make_subplots(
-            rows=num_subplots,
+            rows=num_graphs,
             cols=1,
             subplot_titles=subplot_titles,
-            vertical_spacing=vertical_spacing,  # Dinamik masofa
-            row_heights=row_heights,
+            vertical_spacing=0.05
+            if num_graphs <= 3
+            else 0.03
+            if num_graphs <= 5
+            else 0.01,
             specs=specs,
         )
 
-        # --- Grafiklar chizish qismi ---
         color_pool = generate_colors(num_graphs)
         for idx, (x, y, mean, sigma, param, key, skv) in enumerate(graph_data):
             row, col = idx + 1, 1
@@ -1036,7 +1019,8 @@ def results_view(request):
                 MAIN_MAGNITUDE_COLUMN,
                 SECONDARY_MAGNITUDE_COLUMN,
             )
-            draw_magnitude_values(fig, result_df, row, col)
+            if result_df is not None:
+                draw_magnitude_values(fig, result_df, row, col, min_mag=min_mag)
             fig.update_xaxes(
                 tickformat="%Y",
                 showgrid=True,
@@ -1046,24 +1030,15 @@ def results_view(request):
                 col=col,
             )
 
-        # --- Xaritani chizish qismi (eng oxirgi subplotga) ---
-        map_row = num_graphs + 1
-        center_lat, center_lon = add_map_data(
-            fig, selected_keys, well_coords, calculated_R_km, map_row
-        )
-
         # --- Layoutni sozlash ---
         fig.update_layout(
-            title_text="Tahlil natijalari - Barcha va tanlangan skvajinalar",
+            title_text="Tahlil natijalari",
             height=total_figure_height,
             showlegend=True,
             plot_bgcolor="gainsboro",
             hovermode="x unified",
-            mapbox_style="open-street-map",
-            mapbox_center=go.layout.mapbox.Center(lat=center_lat, lon=center_lon),
-            mapbox_zoom=7,
             legend=dict(
-                x=0.01,  # Legend ni grafik ichida chapda joylash
+                x=0.01,
                 y=0.99,
                 bgcolor="rgba(255,255,255,0.9)",
                 bordercolor="rgba(0,0,0,0.3)",
@@ -1073,15 +1048,13 @@ def results_view(request):
                 font=dict(size=10),
             ),
             title=dict(font=dict(size=20), x=0.5, xanchor="center"),
-            margin=dict(l=20, r=20, t=80, b=20),  # Minimal chetki bo'shliqlar
-            autosize=True,  # Avtomatik o'lcham moslash
+            margin=dict(l=20, r=20, t=80, b=20),
+            autosize=True,
         )
 
-        # Plotly grafikini HTMLga o'tkazamiz
-        # Barcha zoom funksiyalari yoqilgan (scroll, buttonlar, pan)
         config = {
             "displayModeBar": True,
-            "scrollZoom": True,  # Scroll zoom barcha joyda yoqilgan
+            "scrollZoom": True,
             "doubleClick": "reset+autosize",
             "modeBarButtonsToAdd": [
                 "pan2d",
@@ -1095,9 +1068,18 @@ def results_view(request):
         plotly_html = fig.to_html(
             full_html=False, include_plotlyjs="cdn", config=config
         )
-        
-        # Natijani template'ga yuboramiz
-        return render(request, "seismos_app/results.html", {"plotly_graph": plotly_html})
+
+        # Folium xaritasini yaratish
+        folium_map_html = add_map_data_folium(
+            selected_keys, well_coords, filtered_earthquakes_df
+        )
+
+        # Natijani template'ga yuborish
+        return render(
+            request,
+            "seismos_app/results.html",
+            {"plotly_graph": plotly_html, "folium_map": folium_map_html},
+        )
 
     except Exception as e:
         logging.error(f"Results view error: {e}")
