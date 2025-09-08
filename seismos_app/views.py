@@ -672,7 +672,6 @@ def add_map_data_folium(selected_keys, well_coords, earthquake_data):
         location=[center_lat, center_lon],
         zoom_start=7,
         tiles="OpenStreetMap",
-        # width='1200px',height='700px'
     )
 
     # Barcha skvajinalarni xaritaga qoʻshish (kulrang rangda)
@@ -698,20 +697,21 @@ def add_map_data_folium(selected_keys, well_coords, earthquake_data):
             ).add_to(m)
 
     # Zilzilalarni xaritaga qoʻshish
+    logging.info(f"Xaritaga qo'shiladigan zilzila qatorlari: {len(earthquake_data)}")
     if earthquake_data is not None and not earthquake_data.empty:
-        for _, row in earthquake_data.iterrows():
+        for idx, row in earthquake_data.iterrows():
             mag_val = row.get(MAIN_MAGNITUDE_COLUMN, None)
+            date_val = row.get(DATE_COLUMN, "Noma'lum")
+            year = pd.to_datetime(date_val, format="mixed", errors="coerce").year
+            logging.info(f"Zilzila {idx}: Sana={date_val}, Yil={year}, Mb={mag_val}")
 
             if mag_val is not None and not np.isnan(mag_val) and mag_val > 0:
-                date_str = str(row.get(DATE_COLUMN, "Noma'lum"))
                 depth_val = row.get("Depth", "Noma'lum")
-
                 tooltip_html = f"""
                 <b>Zilzila</b><br>
-                Sana: {date_str}<br>
+                Sana: {date_val}<br>
                 Chuqurlik (km): {depth_val}<br>
                 Magnituda (Mb): {mag_val:.2f}<br>
-                
                 """
                 folium.CircleMarker(
                     location=[row[LATITUDE_COLUMN], row[LONGITUDE_COLUMN]],
@@ -722,6 +722,8 @@ def add_map_data_folium(selected_keys, well_coords, earthquake_data):
                     fill_opacity=0.8,
                     tooltip=tooltip_html,
                 ).add_to(m)
+            else:
+                logging.warning(f"Zilzila {idx} o'tkazib yuborildi: Mb={mag_val}")
 
     return m._repr_html_()
 
@@ -914,7 +916,6 @@ def results_view(request):
                 # Anomaliya sanasini topish
                 upper_bound = mean + btn_value * sigma
                 lower_bound = mean - btn_value * sigma
-
                 anomalies = y_series[
                     (y_series > upper_bound) | (y_series < lower_bound)
                 ]
@@ -933,38 +934,29 @@ def results_view(request):
                 {"error": "Hech qanday mos keluvchi maʼlumot topilmadi."},
             )
 
-        # Excel fayldagi zilzilalar ma'lumotlarini yuklash va faqat min_mag bo'yicha filtrlash
+        # Excel fayldagi zilzilalar ma'lumotlarini yuklash
         all_earthquakes_df = dfe.copy()
         all_earthquakes_df["combined_datetime"] = pd.to_datetime(
             all_earthquakes_df[DATE_COLUMN].astype(str)
             + " "
             + all_earthquakes_df[TIME_COLUMN].astype(str),
-            format="%d.%m.%Y %H:%M:%S",
+            format="mixed",
             errors="coerce",
         )
         all_earthquakes_df.dropna(subset=["combined_datetime"], inplace=True)
-
-        # Faqat min_mag dan katta zilzilalarni olish (yiliga yoki anomaliya sanasiga qaramasdan)
+        
+        logging.info(f"Excel fayldagi yillar: {all_earthquakes_df['combined_datetime'].dt.year.unique()}")
+        logging.info(f"Excel fayldagi umumiy qatorlar: {len(all_earthquakes_df)}")
+        
+        # XARITA UCHUN: Barcha yillardagi zilzilalarni faqat min_mag bo'yicha filtrlaymiz
         filtered_earthquakes_df = all_earthquakes_df[
             all_earthquakes_df[MAIN_MAGNITUDE_COLUMN] >= min_mag
         ].copy()
 
-        # Anomaliya boshlangandan keyingi zilzilalarni olish
-        recent_earthquakes_df = None
-        if first_anomaly_date is not None:
-            recent_earthquakes_df = all_earthquakes_df[
-                all_earthquakes_df["combined_datetime"] >= first_anomaly_date
-            ].copy()
+        logging.info(f"min_mag={min_mag} bo'yicha filtrlangan qatorlar: {len(filtered_earthquakes_df)}")
+        logging.info(f"Filtrlangan yillar: {filtered_earthquakes_df['combined_datetime'].dt.year.unique()}")
 
-        # Endi radius bo'yicha emas, faqat anomaliya sanasidan keyingi va min_mag dan katta zilzilalar olinadi
-        if recent_earthquakes_df is not None and not recent_earthquakes_df.empty:
-            filtered_earthquakes_df = recent_earthquakes_df[
-                recent_earthquakes_df[MAIN_MAGNITUDE_COLUMN] >= min_mag
-            ].copy()
-        else:
-            filtered_earthquakes_df = pd.DataFrame()
-
-        # Grafiklar chizish qismi (avvalgidek o'zgarishsiz)
+        # Grafiklar chizish
         num_graphs = len(graph_data)
         single_graph_height = 500
         total_figure_height = num_graphs * single_graph_height
@@ -990,6 +982,22 @@ def results_view(request):
             else 0.01,
             specs=specs,
         )
+
+        # GRAFIK UCHUN: x-o'qi diapazonini aniqlash uchun barcha sanalarni birlashtiramiz
+        all_dates = []
+        for x_val, _, _, _, _, _, _ in graph_data:
+            all_dates.extend(x_val)
+        all_earthquake_dates = list(all_earthquakes_df["combined_datetime"])
+
+        # Sana oralig'ini hisoblash (2025-yilni majburiy qamrab olish uchun)
+        if all_dates or all_earthquake_dates:
+            min_date = min(pd.to_datetime(all_dates + all_earthquake_dates, errors="coerce"))
+            max_date = max(pd.to_datetime(all_dates + all_earthquake_dates, errors="coerce"))
+            delta = (max_date - min_date) * 0.05 if (max_date - min_date) > timedelta(0) else timedelta(days=1)
+        else:
+            min_date = pd.to_datetime("2020-01-01")
+            max_date = pd.to_datetime("2025-12-31")
+            delta = timedelta(days=1)
 
         color_pool = generate_colors(num_graphs)
         for idx, (x, y, mean, sigma, param, key, skv) in enumerate(graph_data):
@@ -1021,7 +1029,10 @@ def results_view(request):
             )
             if result_df is not None:
                 draw_magnitude_values(fig, result_df, row, col, min_mag=min_mag)
+
+            # x-o'qi diapazonini majburiy belgilash (2025-yilni qamrab olish uchun)
             fig.update_xaxes(
+                range=[min_date - delta, max_date + delta],
                 tickformat="%Y",
                 showgrid=True,
                 griddash="dot",
@@ -1030,7 +1041,7 @@ def results_view(request):
                 col=col,
             )
 
-        # --- Layoutni sozlash ---
+        # Layout sozlamalari
         fig.update_layout(
             title_text="Tahlil natijalari",
             height=total_figure_height,
@@ -1069,7 +1080,7 @@ def results_view(request):
             full_html=False, include_plotlyjs="cdn", config=config
         )
 
-        # Folium xaritasini yaratish
+        # Folium xaritasini yaratish (barcha yillardagi zilzilalar)
         folium_map_html = add_map_data_folium(
             selected_keys, well_coords, filtered_earthquakes_df
         )
