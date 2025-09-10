@@ -1174,11 +1174,11 @@ def results_view(request):
             )
 
         # Layout sozlamalari
-        title_suffix = f" (Anomaliya: {first_anomaly_date.strftime('%Y')} dan boshlab)" if first_anomaly_date else ""
+       
         fig.update_layout(
-            title_text=f"Tahlil natijalari{title_suffix}",
+            title_text="Tahlil natijalari",
             height=total_figure_height,
-            showlegend=True,
+            showlegend=False,
             plot_bgcolor="gainsboro",
             hovermode="x unified",
             legend=dict(
