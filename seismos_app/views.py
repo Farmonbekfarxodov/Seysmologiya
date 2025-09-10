@@ -1,3 +1,4 @@
+import datetime
 import os
 import json
 import logging
@@ -777,7 +778,8 @@ def add_map_data_folium(selected_keys, well_coords, earthquake_data, min_mag, mi
         for idx, row in all_filtered_earthquakes.iterrows():
             mag_val = row.get(MAIN_MAGNITUDE_COLUMN, None)
             date_val = row.get(DATE_COLUMN, "Noma'lum")
-            
+            if isinstance(date_val, (pd.Timestamp, datetime.datetime)):
+                date_val = date_val.strftime("%Y-%m-%d")
             distance_val = row.get("R(km)", "Noma'lum")
             mlgr_val = row.get("M/lgR", "Noma'lum")
             depth_val = row.get("Depth", "Noma'lum")
