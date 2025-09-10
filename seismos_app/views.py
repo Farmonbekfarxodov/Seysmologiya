@@ -407,7 +407,7 @@ def plot_data_with_anomalies(
             name=f"{element_name} ({key_name})",
             showlegend=True,
             hoverinfo="x+y",
-            hovertemplate=f"Vaqt: %{{x|%Y-%m-%d}}<br>{element_name} Qiymati: %{{y}}<extra></extra>",
+            hovertemplate=f"Vaqt: %{{x|%d-%m-%Y}}<br>{element_name} Qiymati: %{{y}}<extra></extra>",
         ),
         row=row_idx,
         col=col_idx,
@@ -468,7 +468,7 @@ def plot_data_with_anomalies(
                             line=dict(color="red", width=3),
                             showlegend=False,
                             hoverinfo="x+y",
-                            hovertemplate="Vaqt: %{x|%Y-%m-%d %H:%M}<br>Anomaliya: %{y}<extra></extra>",
+                            hovertemplate="Vaqt: %{x|%d-%m-%Y}<br>Anomaliya: %{y}<extra></extra>",
                         ),
                         row=row_idx,
                         col=col_idx,
@@ -498,7 +498,7 @@ def plot_data_with_anomalies(
                         line=dict(color="red", width=3),
                         showlegend=False,
                         hoverinfo="x+y",
-                        hovertemplate="Vaqt: %{x|%Y-%m-%d %H:%M}<br>Anomaliya: %{y}<extra></extra>",
+                        hovertemplate="Vaqt: %{x|%d-%m-%Y}<br>Anomaliya: %{y}<extra></extra>",
                     ),
                     row=row_idx,
                     col=col_idx,
@@ -521,7 +521,7 @@ def plot_data_with_anomalies(
                 line=dict(color="red", width=3),
                 showlegend=False,
                 hoverinfo="x+y",
-                hovertemplate="Vaqt: %{x|%Y-%m-%d %H:%M}<br>Anomaliya: %{y}<extra></extra>",
+                hovertemplate="Vaqt: %{x|%d-%m-%Y}<br>Anomaliya: %{y}<extra></extra>",
             ),
             row=row_idx,
             col=col_idx,
@@ -531,21 +531,50 @@ def plot_data_with_anomalies(
     return y_all_values
 
 
-def draw_magnitude_values(fig, result_df, row_index, col_index=1, min_mag=4):
+def draw_magnitude_values(fig, original_df, row_index, col_index=1, min_mag=4, well_lat=0, well_lon=0, min_mlgr=0):
     """
-    Seysmik Mb magnitudalarni ikkinchi Y-o'qda vertikal zangori chiziqlar orqali chizadi.
+    Barcha Mb magnitudalarni ikkinchi Y-o'qda vertikal chiziqlar orqali chizadi.
+    original_df - asl Excel fayli ma'lumotlari
     """
-    if result_df is None or result_df.empty:
-        logging.info(f"draw_magnitude_values: result_df is empty for row {row_index}")
+    if original_df is None or original_df.empty:
+        logging.info(f"draw_magnitude_values: original_df is empty for row {row_index}")
         return [0, 1]
 
-    # Faqat foydalanuvchi kiritgan min_mag dan katta magnitudalarni ko'rsatish
-    filtered_main_mag = result_df[result_df[MAIN_MAGNITUDE_COLUMN] >= min_mag][
-        MAIN_MAGNITUDE_COLUMN
-    ]
-    max_mag_for_y_axis = (
-        filtered_main_mag.max() * 1.1 if not filtered_main_mag.empty else 0.1
+    # Asl ma'lumotlarni qayta ishlash
+    df = original_df.copy()
+    
+    # Vaqt ustunini yaratish
+    df["combined_datetime"] = pd.to_datetime(
+        df[DATE_COLUMN].astype(str) + " " + df[TIME_COLUMN].astype(str),
+        format="mixed",
+        errors="coerce"
     )
+    df.dropna(subset=["combined_datetime"], inplace=True)
+    
+    # Mb qiymatlarini raqamga aylantirish
+    df[MAIN_MAGNITUDE_COLUMN] = pd.to_numeric(df[MAIN_MAGNITUDE_COLUMN], errors="coerce")
+    df.dropna(subset=[MAIN_MAGNITUDE_COLUMN], inplace=True)
+    
+    # Masofani hisoblash
+    df["R(km)"] = np.round(
+        destenc_vectorized(well_lat, well_lon, df[LATITUDE_COLUMN], df[LONGITUDE_COLUMN])
+    )
+    df["M/lgR"] = np.where(
+        df["R(km)"] > 1, df[MAIN_MAGNITUDE_COLUMN] / np.log10(df["R(km)"]), np.nan
+    )
+    
+    # Filtrlash: min_mag va min_mlgr bo'yicha
+    valid_earthquakes = df[
+        (df[MAIN_MAGNITUDE_COLUMN] >= min_mag) & 
+        (df["M/lgR"] >= min_mlgr)
+    ].copy()
+    
+    if valid_earthquakes.empty:
+        logging.info(f"draw_magnitude_values: No valid earthquakes for row {row_index}")
+        return [0, 1]
+    
+    # Y-o'qi diapazonini belgilash
+    max_mag_for_y_axis = valid_earthquakes[MAIN_MAGNITUDE_COLUMN].max() * 1.1
     min_mag_for_y_axis = 0
 
     fig.update_yaxes(
@@ -556,20 +585,25 @@ def draw_magnitude_values(fig, result_df, row_index, col_index=1, min_mag=4):
         col=col_index,
     )
 
-    valid_mb_events = result_df[result_df[MAIN_MAGNITUDE_COLUMN] >= min_mag].copy()
-
+    # Vertikal chiziqlar uchun ma'lumotlar
     stem_x = []
     stem_y = []
     hover_texts = []
 
-    for _, row in valid_mb_events.iterrows():
-        time_str = row["datetime_combined"].strftime("%d.%m.%Y %H:%M:%S")
+    for _, row in valid_earthquakes.iterrows():
+        time_str = row["combined_datetime"].strftime("%d.%m.%Y")
         mag_val = row[MAIN_MAGNITUDE_COLUMN]
+        distance = row["R(km)"]
+        mlgr_val = row["M/lgR"]
 
-        stem_x.extend([row["datetime_combined"], row["datetime_combined"], None])
+        stem_x.extend([row["combined_datetime"], row["combined_datetime"], None])
         stem_y.extend([0, mag_val, None])
 
-        hover_texts.extend(["", f"Vaqt: {time_str}<br>Mb: {mag_val:.2f}", ""])
+        hover_text = (f"Vaqt: {time_str}<br>"
+                     f"Mb: {mag_val:.2f}<br>"
+                     f"Masofa: {distance:.1f} km<br>"
+                     f"M/lgR: {mlgr_val:.2f}")
+        hover_texts.extend(["", hover_text, ""])
 
     if stem_x:
         fig.add_trace(
@@ -578,7 +612,7 @@ def draw_magnitude_values(fig, result_df, row_index, col_index=1, min_mag=4):
                 y=stem_y,
                 mode="lines",
                 line=dict(color="navy", width=2),
-                name=f"{MAIN_MAGNITUDE_COLUMN} Magnituda",
+                name=f"{MAIN_MAGNITUDE_COLUMN} Magnituda (≥{min_mag})",
                 hoverinfo="text",
                 text=hover_texts,
                 showlegend=True,
@@ -635,18 +669,59 @@ def distance_haversine(lat1, lon1, lat2, lon2):
     return d
 
 
-def add_map_data_folium(selected_keys, well_coords, earthquake_data):
+def add_map_data_folium(selected_keys, well_coords, earthquake_data, min_mag, min_mlgr):
     """
     Folium yordamida interaktiv xarita yaratadi va unga barcha
-    skvajinalar, tanlangan skvajinalar va zilzilalarni qoʻshadi.
+    skvajinalar, tanlangan skvajinalar va filtrlangan zilzilalarni qoʻshadi.
     """
     all_wells = get_all_wells_coordinates()
 
     selected_well_names = set()
+    filtered_earthquakes_by_well = []
+    
+    # Har bir tanlangan skvajina uchun filtrlangan zilzilalarni hisoblash
     for key in selected_keys:
         _, skvajina = key.split(" | ")
         selected_well_names.add(skvajina)
+        
+        lat, lon = well_coords.get(skvajina, (None, None))
+        if lat is not None and lon is not None:
+            # Shu skvajina uchun filtrlangan zilzilalarni hisoblash
+            df = earthquake_data.copy()
+            
+            # Mb qiymatlarini raqamga aylantirish
+            df[MAIN_MAGNITUDE_COLUMN] = pd.to_numeric(df[MAIN_MAGNITUDE_COLUMN], errors="coerce")
+            df.dropna(subset=[MAIN_MAGNITUDE_COLUMN], inplace=True)
+            
+            # Masofani hisoblash
+            df["R(km)"] = np.round(
+                destenc_vectorized(lat, lon, df[LATITUDE_COLUMN], df[LONGITUDE_COLUMN])
+            )
+            df["M/lgR"] = np.where(
+                df["R(km)"] > 1, df[MAIN_MAGNITUDE_COLUMN] / np.log10(df["R(km)"]), np.nan
+            )
+            
+            # Filtrlash
+            valid_earthquakes = df[
+                (df[MAIN_MAGNITUDE_COLUMN] >= min_mag) & 
+                (df["M/lgR"] >= min_mlgr)
+            ].copy()
+            
+            if not valid_earthquakes.empty:
+                valid_earthquakes['skvajina'] = skvajina  # Qaysi skvajina uchun ekanligini belgilash
+                filtered_earthquakes_by_well.append(valid_earthquakes)
 
+    # Barcha filtrlangan zilzilalarni birlashtirish
+    if filtered_earthquakes_by_well:
+        all_filtered_earthquakes = pd.concat(filtered_earthquakes_by_well, ignore_index=True)
+        # Dublikatlarni olib tashlash (bir zilzila bir necha skvajina uchun mos kelishi mumkin)
+        all_filtered_earthquakes = all_filtered_earthquakes.drop_duplicates(
+            subset=[LATITUDE_COLUMN, LONGITUDE_COLUMN, DATE_COLUMN, TIME_COLUMN]
+        )
+    else:
+        all_filtered_earthquakes = pd.DataFrame()
+
+    # Xarita markazini aniqlash
     if selected_keys:
         selected_lats = [
             well_coords[key.split(" | ")[1]][0]
@@ -672,8 +747,6 @@ def add_map_data_folium(selected_keys, well_coords, earthquake_data):
         location=[center_lat, center_lon],
         zoom_start=8,
         tiles="OpenStreetMap",
-        # width="1200px",
-        # height="700px",
     )
 
     # Barcha skvajinalarni xaritaga qoʻshish (kulrang rangda)
@@ -686,7 +759,7 @@ def add_map_data_folium(selected_keys, well_coords, earthquake_data):
                 icon=folium.Icon(color="lightblue", icon="pin"),
             ).add_to(m)
 
-    # Tanlangan skvajinalarni xaritaga qoʻshish (qizil rangda, kattaroq)
+    # Tanlangan skvajinalarni xaritaga qoʻshish (pushti rangda, kattaroq)
     for key in selected_keys:
         _, skvajina = key.split(" | ")
         lat, lon = well_coords.get(skvajina, (None, None))
@@ -698,37 +771,73 @@ def add_map_data_folium(selected_keys, well_coords, earthquake_data):
                 icon=folium.Icon(color="pink", icon="pin"),
             ).add_to(m)
 
-    # Zilzilalarni xaritaga qoʻshish
-    logging.info(f"Xaritaga qo'shiladigan zilzila qatorlari: {len(earthquake_data)}")
-    if earthquake_data is not None and not earthquake_data.empty:
-        for idx, row in earthquake_data.iterrows():
+    # Filtrlangan zilzilalarni xaritaga qoʻshish
+    logging.info(f"Xaritaga qo'shiladigan filtrlangan zilzila qatorlari: {len(all_filtered_earthquakes)}")
+    if not all_filtered_earthquakes.empty:
+        for idx, row in all_filtered_earthquakes.iterrows():
             mag_val = row.get(MAIN_MAGNITUDE_COLUMN, None)
             date_val = row.get(DATE_COLUMN, "Noma'lum")
-            year = pd.to_datetime(date_val, format="mixed", errors="coerce").year
-            logging.info(f"Zilzila {idx}: Sana={date_val}, Yil={year}, Mb={mag_val}")
+            
+            distance_val = row.get("R(km)", "Noma'lum")
+            mlgr_val = row.get("M/lgR", "Noma'lum")
+            depth_val = row.get("Depth", "Noma'lum")
+            
+            logging.info(f"Filtrlangan zilzila {idx}: Sana={date_val}, Mb={mag_val}")
 
             if mag_val is not None and not np.isnan(mag_val) and mag_val > 0:
-                depth_val = row.get("Depth", "Noma'lum")
                 tooltip_html = f"""
-                <b>Zilzila</b><br>
+                <b>Filtrlangan zilzila</b><br>
                 Sana: {date_val}<br>
-                Chuqurlik (km): {depth_val}<br>
                 Magnituda (Mb): {mag_val:.2f}<br>
+                Chuqurlik (km): {depth_val}<br>
+                Masofa (km): {distance_val:.1f}<br>
+                M/lgR: {mlgr_val:.2f}<br>
+                
                 """
+                # Magnitudaga qarab rang va o'lchamni belgilash
+                if mag_val >= 6:
+                    color = "darkred"
+                    radius = mag_val * 3
+                elif mag_val >= 5:
+                    color = "red"
+                    radius = mag_val * 2.5
+                elif mag_val >= 4:
+                    color = "orange"
+                    radius = mag_val * 2
+                else:
+                    color = "yellow"
+                    radius = mag_val * 1.5
+                
                 folium.CircleMarker(
                     location=[row[LATITUDE_COLUMN], row[LONGITUDE_COLUMN]],
-                    radius=mag_val * 2.5,
-                    color="darkred",
+                    radius=radius,
+                    color=color,
                     fill=True,
-                    fill_color="darkred",
-                    fill_opacity=0.8,
+                    fill_color=color,
+                    fill_opacity=0.7,
+                    stroke=True,
+                    weight=2,
                     tooltip=tooltip_html,
                 ).add_to(m)
             else:
                 logging.warning(f"Zilzila {idx} o'tkazib yuborildi: Mb={mag_val}")
 
-    return m._repr_html_()
+    # Legend qo'shish
+    legend_html = '''
+    <div style="position: fixed; 
+                bottom: 50px; left: 50px; width: 200px; height: 160px; 
+                background-color: white; border:2px solid grey; z-index:9999; 
+                font-size:14px; padding: 10px">
+    <p><b>Zilzila ranglari:</b></p>
+    <p><i class="fa fa-circle" style="color:darkred"></i> Mb ≥ 6.0</p>
+    <p><i class="fa fa-circle" style="color:red"></i> Mb 5.0-5.9</p>
+    <p><i class="fa fa-circle" style="color:orange"></i> Mb 4.0-4.9</p>
+    <p><i class="fa fa-circle" style="color:yellow"></i> Mb < 4.0</p>
+    </div>
+    '''
+    m.get_root().html.add_child(folium.Element(legend_html))
 
+    return m._repr_html_()
 
 def selection_view(request):
     """
@@ -949,14 +1058,6 @@ def results_view(request):
         
         logging.info(f"Excel fayldagi yillar: {all_earthquakes_df['combined_datetime'].dt.year.unique()}")
         logging.info(f"Excel fayldagi umumiy qatorlar: {len(all_earthquakes_df)}")
-        
-        # XARITA UCHUN: Barcha yillardagi zilzilalarni faqat min_mag bo'yicha filtrlaymiz
-        filtered_earthquakes_df = all_earthquakes_df[
-            all_earthquakes_df[MAIN_MAGNITUDE_COLUMN] >= min_mag
-        ].copy()
-
-        logging.info(f"min_mag={min_mag} bo'yicha filtrlangan qatorlar: {len(filtered_earthquakes_df)}")
-        logging.info(f"Filtrlangan yillar: {filtered_earthquakes_df['combined_datetime'].dt.year.unique()}")
 
         # Grafiklar chizish
         num_graphs = len(graph_data)
@@ -986,24 +1087,31 @@ def results_view(request):
         )
 
         # X-o'qi diapazonini aniqlash
+        today = pd.to_datetime('today').normalize()  # Bugungi sana (soatsiz)
+        
         if first_anomaly_date is not None:
-            # Agar anomaliya topilgan bo'lsa, anomaliya sanasidan 30 kun oldin boshlaymiz
-            # va ma'lumotlarning oxirigacha ko'rsatamiz
+            # Barcha ma'lumotlar diapazonini aniqlash
             all_dates = []
             for x_val, _, _, _, _, _, _ in graph_data:
                 all_dates.extend(x_val)
             all_earthquake_dates = list(all_earthquakes_df["combined_datetime"])
             
             all_combined_dates = pd.to_datetime(all_dates + all_earthquake_dates, errors="coerce")
-            max_date = max(all_combined_dates) if len(all_combined_dates) > 0 else pd.to_datetime("2025-12-31")
+            full_max_date = max(all_combined_dates) if len(all_combined_dates) > 0 else today
+            full_min_date = min(all_combined_dates) if len(all_combined_dates) > 0 else pd.to_datetime("2020-01-01")
             
             # Anomaliya boshlangan sanadan boshlaش
             min_date = first_anomaly_date
-            # Agar min_date ma'lumotlardan oldin bo'lsa, ma'lumotlarning boshidan boshlash
-            actual_min_date = min(all_combined_dates) if len(all_combined_dates) > 0 else pd.to_datetime("2020-01-01")
-            min_date = max(min_date, actual_min_date)
+            # Maksimal sana: ma'lumotlar oxiri va bugungi sanadan kichigi
+            max_date = min(full_max_date, today)
             
             delta = timedelta(days=15)  # Kichik bo'shliq qoldirish
+            
+            # Grafikni uzoqlashtirganda barcha ma'lumotlarni ko'rish uchun
+            # X-o'qining full range'ini saqlash (bugungi sanagacha)
+            global_min_date = full_min_date
+            global_max_date = min(full_max_date, today)
+            
         else:
             # Agar anomaliya topilmagan bo'lsa, barcha ma'lumotlarni ko'rsatish
             all_dates = []
@@ -1012,13 +1120,18 @@ def results_view(request):
             all_earthquake_dates = list(all_earthquakes_df["combined_datetime"])
 
             if all_dates or all_earthquake_dates:
-                min_date = min(pd.to_datetime(all_dates + all_earthquake_dates, errors="coerce"))
-                max_date = max(pd.to_datetime(all_dates + all_earthquake_dates, errors="coerce"))
+                all_combined_dates = pd.to_datetime(all_dates + all_earthquake_dates, errors="coerce")
+                min_date = min(all_combined_dates)
+                # Bugungi sanagacha ko'rsatish
+                max_date = min(max(all_combined_dates), today)
                 delta = (max_date - min_date) * 0.05 if (max_date - min_date) > timedelta(0) else timedelta(days=1)
             else:
                 min_date = pd.to_datetime("2020-01-01")
-                max_date = pd.to_datetime("2025-12-31")
+                max_date = today
                 delta = timedelta(days=1)
+                
+            global_min_date = min_date
+            global_max_date = max_date
 
         color_pool = generate_colors(num_graphs)
         for idx, (x, y, mean, sigma, param, key, skv) in enumerate(graph_data):
@@ -1035,26 +1148,24 @@ def results_view(request):
             )
 
             lat, lon = well_coords.get(skv, (0, 0))
-            result_df = process_dataframe(
-                dfe,
-                min_mag,
-                min_mlgr,
-                lat,
-                lon,
-                DATE_COLUMN,
-                TIME_COLUMN,
-                LATITUDE_COLUMN,
-                LONGITUDE_COLUMN,
-                MAIN_MAGNITUDE_COLUMN,
-                SECONDARY_MAGNITUDE_COLUMN,
-            )
-            if result_df is not None:
-                draw_magnitude_values(fig, result_df, row, col, min_mag=min_mag)
+            
+            # draw_magnitude_values funksiyasini yangi parametrlar bilan chaqirish
+            if not dfe.empty:
+                draw_magnitude_values(
+                    fig, 
+                    dfe,  # Asl Excel fayli ma'lumotlari
+                    row, 
+                    col, 
+                    min_mag=min_mag, 
+                    well_lat=lat, 
+                    well_lon=lon, 
+                    min_mlgr=min_mlgr
+                )
 
             # X-o'qi diapazonini belgilash
             fig.update_xaxes(
                 range=[min_date - delta, max_date + delta],
-                tickformat="%Y-%m-%d" if first_anomaly_date else "%Y-%m",
+                tickformat="%Y" if first_anomaly_date else "%Y",
                 showgrid=True,
                 griddash="dot",
                 dtick="M3" if first_anomaly_date else "M12",  # Anomaliya bo'lsa 3 oylik, yo'qsa yillik
@@ -1063,7 +1174,7 @@ def results_view(request):
             )
 
         # Layout sozlamalari
-        title_suffix = f" (Anomaliya: {first_anomaly_date.strftime('%Y-%m-%d')} dan boshlab)" if first_anomaly_date else ""
+        title_suffix = f" (Anomaliya: {first_anomaly_date.strftime('%Y')} dan boshlab)" if first_anomaly_date else ""
         fig.update_layout(
             title_text=f"Tahlil natijalari{title_suffix}",
             height=total_figure_height,
@@ -1105,9 +1216,9 @@ def results_view(request):
             full_html=False, include_plotlyjs="cdn", config=config
         )
 
-        # Folium xaritasini yaratish (barcha yillardagi zilzilalar)
+        # Folium xaritasini yaratish (filtrlangan zilzilalar bilan)
         folium_map_html = add_map_data_folium(
-            selected_keys, well_coords, filtered_earthquakes_df
+            selected_keys, well_coords, all_earthquakes_df, min_mag, min_mlgr
         )
 
         # Natijani template'ga yuborish
