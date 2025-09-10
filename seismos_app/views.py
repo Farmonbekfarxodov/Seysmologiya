@@ -407,7 +407,7 @@ def plot_data_with_anomalies(
             name=f"{element_name} ({key_name})",
             showlegend=True,
             hoverinfo="x+y",
-            hovertemplate=f"Vaqt: %{{x|%Y-%m-%d %H:%M}}<br>{element_name} Qiymati: %{{y}}<extra></extra>",
+            hovertemplate=f"Vaqt: %{{x|%Y-%m-%d}}<br>{element_name} Qiymati: %{{y}}<extra></extra>",
         ),
         row=row_idx,
         col=col_idx,
@@ -670,8 +670,10 @@ def add_map_data_folium(selected_keys, well_coords, earthquake_data):
 
     m = folium.Map(
         location=[center_lat, center_lon],
-        zoom_start=7,
+        zoom_start=8,
         tiles="OpenStreetMap",
+        # width="1200px",
+        # height="700px",
     )
 
     # Barcha skvajinalarni xaritaga qoʻshish (kulrang rangda)
@@ -681,7 +683,7 @@ def add_map_data_folium(selected_keys, well_coords, earthquake_data):
             folium.Marker(
                 location=[lat, lon],
                 tooltip=tooltip_text,
-                icon=folium.Icon(color="gray", icon="info-sign"),
+                icon=folium.Icon(color="lightblue", icon="pin"),
             ).add_to(m)
 
     # Tanlangan skvajinalarni xaritaga qoʻshish (qizil rangda, kattaroq)
@@ -693,7 +695,7 @@ def add_map_data_folium(selected_keys, well_coords, earthquake_data):
             folium.Marker(
                 location=[lat, lon],
                 tooltip=tooltip_text,
-                icon=folium.Icon(color="red", icon="fire"),
+                icon=folium.Icon(color="pink", icon="pin"),
             ).add_to(m)
 
     # Zilzilalarni xaritaga qoʻshish
@@ -983,21 +985,40 @@ def results_view(request):
             specs=specs,
         )
 
-        # GRAFIK UCHUN: x-o'qi diapazonini aniqlash uchun barcha sanalarni birlashtiramiz
-        all_dates = []
-        for x_val, _, _, _, _, _, _ in graph_data:
-            all_dates.extend(x_val)
-        all_earthquake_dates = list(all_earthquakes_df["combined_datetime"])
-
-        # Sana oralig'ini hisoblash (2025-yilni majburiy qamrab olish uchun)
-        if all_dates or all_earthquake_dates:
-            min_date = min(pd.to_datetime(all_dates + all_earthquake_dates, errors="coerce"))
-            max_date = max(pd.to_datetime(all_dates + all_earthquake_dates, errors="coerce"))
-            delta = (max_date - min_date) * 0.05 if (max_date - min_date) > timedelta(0) else timedelta(days=1)
+        # X-o'qi diapazonini aniqlash
+        if first_anomaly_date is not None:
+            # Agar anomaliya topilgan bo'lsa, anomaliya sanasidan 30 kun oldin boshlaymiz
+            # va ma'lumotlarning oxirigacha ko'rsatamiz
+            all_dates = []
+            for x_val, _, _, _, _, _, _ in graph_data:
+                all_dates.extend(x_val)
+            all_earthquake_dates = list(all_earthquakes_df["combined_datetime"])
+            
+            all_combined_dates = pd.to_datetime(all_dates + all_earthquake_dates, errors="coerce")
+            max_date = max(all_combined_dates) if len(all_combined_dates) > 0 else pd.to_datetime("2025-12-31")
+            
+            # Anomaliya boshlangan sanadan boshlaش
+            min_date = first_anomaly_date
+            # Agar min_date ma'lumotlardan oldin bo'lsa, ma'lumotlarning boshidan boshlash
+            actual_min_date = min(all_combined_dates) if len(all_combined_dates) > 0 else pd.to_datetime("2020-01-01")
+            min_date = max(min_date, actual_min_date)
+            
+            delta = timedelta(days=15)  # Kichik bo'shliq qoldirish
         else:
-            min_date = pd.to_datetime("2020-01-01")
-            max_date = pd.to_datetime("2025-12-31")
-            delta = timedelta(days=1)
+            # Agar anomaliya topilmagan bo'lsa, barcha ma'lumotlarni ko'rsatish
+            all_dates = []
+            for x_val, _, _, _, _, _, _ in graph_data:
+                all_dates.extend(x_val)
+            all_earthquake_dates = list(all_earthquakes_df["combined_datetime"])
+
+            if all_dates or all_earthquake_dates:
+                min_date = min(pd.to_datetime(all_dates + all_earthquake_dates, errors="coerce"))
+                max_date = max(pd.to_datetime(all_dates + all_earthquake_dates, errors="coerce"))
+                delta = (max_date - min_date) * 0.05 if (max_date - min_date) > timedelta(0) else timedelta(days=1)
+            else:
+                min_date = pd.to_datetime("2020-01-01")
+                max_date = pd.to_datetime("2025-12-31")
+                delta = timedelta(days=1)
 
         color_pool = generate_colors(num_graphs)
         for idx, (x, y, mean, sigma, param, key, skv) in enumerate(graph_data):
@@ -1030,20 +1051,21 @@ def results_view(request):
             if result_df is not None:
                 draw_magnitude_values(fig, result_df, row, col, min_mag=min_mag)
 
-            # x-o'qi diapazonini majburiy belgilash (2025-yilni qamrab olish uchun)
+            # X-o'qi diapazonini belgilash
             fig.update_xaxes(
                 range=[min_date - delta, max_date + delta],
-                tickformat="%Y",
+                tickformat="%Y-%m-%d" if first_anomaly_date else "%Y-%m",
                 showgrid=True,
                 griddash="dot",
-                dtick="M12",
+                dtick="M3" if first_anomaly_date else "M12",  # Anomaliya bo'lsa 3 oylik, yo'qsa yillik
                 row=row,
                 col=col,
             )
 
         # Layout sozlamalari
+        title_suffix = f" (Anomaliya: {first_anomaly_date.strftime('%Y-%m-%d')} dan boshlab)" if first_anomaly_date else ""
         fig.update_layout(
-            title_text="Tahlil natijalari",
+            title_text=f"Tahlil natijalari{title_suffix}",
             height=total_figure_height,
             showlegend=True,
             plot_bgcolor="gainsboro",
@@ -1075,6 +1097,9 @@ def results_view(request):
                 "resetScale2d",
             ],
             "responsive": True,
+            # Zoom va pan imkoniyatlarini kengaytirish
+            "showTips": True,
+            "displaylogo": False,
         }
         plotly_html = fig.to_html(
             full_html=False, include_plotlyjs="cdn", config=config
