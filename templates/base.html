@@ -9,6 +9,36 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
+    <!-- Top-bar -->
+<header class="top-bar">
+    <div class="container d-flex align-items-center">
+        <!-- Logotip (bosilganda bosh sahifaga qaytadi) -->
+        <a href="{% url 'index' %}" class="logo-link">
+            <img src="https://seismos.uz/logo_new_uz123.png" alt="Logo" class="logo">
+        </a>
+
+    </div>
+</header>
+
+<style>
+    .top-bar {
+        background: linear-gradient(90deg, #003366, #001a33);
+        padding: 10px 20px;
+        border-bottom: 3px solid #002244;
+    }
+    .logo {
+        height: 60px;
+        width: auto;
+    }
+    .top-bar-text {
+        color: white;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    .logo-link {
+        text-decoration: none;
+    }
+</style>
     <div class="container mt-4">
         {% block content %}{% endblock %}
     </div>

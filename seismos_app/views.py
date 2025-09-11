@@ -1102,12 +1102,12 @@ def results_view(request):
             full_max_date = max(all_combined_dates) if len(all_combined_dates) > 0 else today
             full_min_date = min(all_combined_dates) if len(all_combined_dates) > 0 else pd.to_datetime("2020-01-01")
             
-            # Anomaliya boshlangan sanadan boshlaش
+            # Anomaliya boshlangan sanadan boshla
             min_date = first_anomaly_date
             # Maksimal sana: ma'lumotlar oxiri va bugungi sanadan kichigi
             max_date = min(full_max_date, today)
             
-            delta = timedelta(days=15)  # Kichik bo'shliq qoldirish
+            delta = timedelta(days=15)  # Kichik bo'shl iq qoldirish
             
             # Grafikni uzoqlashtirganda barcha ma'lumotlarni ko'rish uchun
             # X-o'qining full range'ini saqlash (bugungi sanagacha)
