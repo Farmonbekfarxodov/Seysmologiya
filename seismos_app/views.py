@@ -14,6 +14,7 @@ import base64
 
 from datetime import timedelta
 from math import pi, sin, cos, atan2, sqrt
+from decouple import config
 
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
@@ -76,7 +77,6 @@ COLOR_PALETTE = [
 # Database Utilities
 def get_db_config():
     """Reads database configuration from environment variables."""
-    from decouple import config
     try:
         return {
             'db': config('DB_NAME'),

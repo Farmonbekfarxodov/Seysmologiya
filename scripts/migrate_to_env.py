@@ -4,6 +4,13 @@ Migration script to convert user_info.json to .env format
 """
 import json
 import os
+import secrets
+import string
+
+def generate_secret_key(length=50):
+    """Generate a random secret key for Django"""
+    chars = string.ascii_letters + string.digits + '!@#$%^&*(-_=+)'
+    return ''.join(secrets.choice(chars) for _ in range(length))
 
 def migrate_config():
     """Migrate user_info.json to .env format"""
@@ -11,9 +18,12 @@ def migrate_config():
         with open('user_info.json', 'r') as f:
             config = json.load(f)
         
+        # Generate a proper random SECRET_KEY
+        new_secret_key = generate_secret_key()
+        
         env_content = f"""# Generated from user_info.json
 # Django Settings
-SECRET_KEY=django-insecure-CHANGE-THIS-IMMEDIATELY
+SECRET_KEY={new_secret_key}
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
 
@@ -31,12 +41,13 @@ CORS_ALLOWED_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
         with open('.env', 'w') as f:
             f.write(env_content)
         
-        print("✅ Migration successful! Don't forget to:")
-        print("1. Generate a new SECRET_KEY")
-        print("   Run: python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'")
-        print("2. Set DEBUG=False for production")
-        print("3. Update ALLOWED_HOSTS with your domain")
-        print("4. Review and update CORS_ALLOWED_ORIGINS")
+        print("✅ Migration successful!")
+        print("⚠️  IMPORTANT: A new SECRET_KEY has been generated automatically.")
+        print("   For production:")
+        print("   1. Set DEBUG=False")
+        print("   2. Update ALLOWED_HOSTS with your domain")
+        print("   3. Review and update CORS_ALLOWED_ORIGINS")
+        print("   4. Use strong database passwords")
         
     except FileNotFoundError:
         print("❌ user_info.json not found")
