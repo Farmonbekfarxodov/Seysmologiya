@@ -14,6 +14,7 @@ import base64
 
 from datetime import timedelta
 from math import pi, sin, cos, atan2, sqrt
+from decouple import config
 
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
@@ -75,16 +76,16 @@ COLOR_PALETTE = [
 
 # Database Utilities
 def get_db_config():
-    """Reads database configuration from user_info.json."""
-    config_path = os.path.join(settings.BASE_DIR, "user_info.json")
+    """Reads database configuration from environment variables."""
     try:
-        with open(config_path) as f:
-            return json.load(f)
-    except FileNotFoundError:
-        logging.error(f"Configuration file not found at {config_path}")
-        raise
-    except json.JSONDecodeError:
-        logging.error(f"Error decoding JSON from {config_path}. Check file format.")
+        return {
+            'db': config('DB_NAME'),
+            'user': config('DB_USER'),
+            'psw': config('DB_PASSWORD'),
+            'ip': config('DB_HOST', default='localhost'),
+        }
+    except Exception as e:
+        logging.error(f"Database configuration error: {e}")
         raise
 
 
